@@ -109,7 +109,7 @@ function replaceIconOnly(plugin, spec) {
   if (!/^\s*#!name\s*=/mi.test(plugin)) throw new Error(`Converted output has no Loon plugin name: ${spec.filename}`);
   const header = plugin.split(/\n\s*\[/, 1)[0];
   if (!/ddgksf2013/i.test(header)) throw new Error(`Converted header does not preserve the original ddgksf2013 attribution: ${spec.filename}`);
-  if (!/^\s*\[(?:Script|Rewrite|URL Rewrite|Rule)\]/mi.test(plugin)) throw new Error(`Converted output has no recognizable Loon sections: ${spec.filename}`);
+  if (!/^\s*\[(?:Script|Rewrite|URL Rewrite|Rule)\]/mi.test(plugin)) throw new Error(`Converted output has no recognizable Loon sections: ${spec.filename}; preview=${plugin.slice(0, 900).replace(/\\s+/g, ' ')}`);
   if (/Script Hub 重写转换.*❌|#!error\s*=/i.test(plugin)) throw new Error(`Converter returned an error for ${spec.filename}`);
 
   const lines = plugin.replace(/\r\n/g, '\n').split('\n');
