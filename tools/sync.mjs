@@ -65,8 +65,8 @@ function validateSource(body, spec) {
     return;
   }
   // YangJiBao is supplied as a standalone JavaScript script, not a .conf file.
-  if (!/(?:\bfunction\b|\bconst\b|\blet\b|\bvar\b|\$task|\$httpClient|\$prefs|\$done|=>)/.test(body)) {
-    throw new Error(`Expected a JavaScript script: ${spec.source}`);
+  if (body.trim().length < 32 || /^(?:not found|forbidden|access denied|error\\b)/i.test(body.trim())) {
+    throw new Error(`The JavaScript source looks like an error response: ${spec.source}; preview=${body.slice(0, 120).replace(/\\s+/g, ' ')}`);
   }
 }
 
