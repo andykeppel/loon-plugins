@@ -61,7 +61,7 @@ const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 
 function validateSource(body, spec) {
   if (spec.sourceKind === 'config') {
-    if (!/^\s*\[[^\]]+\]/m.test(body)) throw new Error(`Expected a QX/Surge rewrite config: ${spec.source}`);
+    if (!/^\s*\[[^\]]+\]/m.test(body)) throw new Error(`Expected a QX/Surge rewrite config: ${spec.source}; preview=${body.slice(0, 240).replace(/\s+/g, ' ')}`);
     return;
   }
   // YangJiBao is supplied as a standalone JavaScript script, not a .conf file.
