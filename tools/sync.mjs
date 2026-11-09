@@ -16,6 +16,8 @@ const BASE = `https://raw.githubusercontent.com/${repo}/main`;
 const PARSER_COMMIT = 'bc1b8b05138adead482d87b284c58a34d8470503';
 const PARSER_URL = `https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/${PARSER_COMMIT}/Rewrite-Parser.js`;
 const STATE_PATH = '.last-sync.json';
+const WEIBO_SCRIPT_SOURCE = 'https://ddgksf2013.top/scripts/weibo_json.js';
+const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
@@ -183,6 +185,16 @@ try {
     console.log(`Source OK: ${spec.filename} (${Buffer.byteLength(body)} bytes)`);
   }
 
+  // Keep the actual assistant JS in the same GitHub repository so Loon does
+  // not depend on the original host being accessible at import/runtime.
+  const weiboScript = await getText(WEIBO_SCRIPT_SOURCE, {'User-Agent':'Surge'}, 2 * 1024 * 1024);
+  if (Buffer.byteLength(weiboScript, 'utf8') < 30000 ||
+      !weiboScript.includes('createSettingsHandler') ||
+      !weiboScript.includes('SETTINGS_PAGE')) {
+    throw new Error('Original Weibo script lacks its expected assistant settings implementation; preserving previous version');
+  }
+  console.log('Weibo settings script fetched: ' + Buffer.byteLength(weiboScript) + ' bytes');
+
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
   let parser = await getText(PARSER_URL, {'User-Agent': 'UNIONFUSION-GitHub-Actions'}, 400 * 1024);
   const nodeExit = 'case"Node.js":process.exit(1)';
@@ -193,21 +205,34 @@ try {
   const auditReport = {checkedAt: now.toISOString(), converter: 'Script-Hub-Org/Script-Hub', parserCommit: PARSER_COMMIT, plugins: {}};
   for (const spec of specs) {
     const converted = await convertWithScriptHub(parser, spec, sourceBodies.get(spec.filename));
-    const plugin = customizePlugin(converted, spec);
+    let plugin = customizePlugin(converted, spec);
+    if (spec.filename === 'WeiboEnhanced.plugin') {
+      const originalPath = 'script-path=' + WEIBO_SCRIPT_SOURCE;
+      const occurrences = plugin.split(originalPath).length - 1;
+      if (occurrences < 3) throw new Error('Expected Weibo script rules are missing; refusing incomplete conversion');
+      plugin = plugin.split(originalPath).join('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL);
+    }
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
+    if (spec.filename === 'WeiboEnhanced.plugin') {
+      auditReport.plugins[spec.filename].originalScript = WEIBO_SCRIPT_SOURCE;
+      auditReport.plugins[spec.filename].originalScriptSha256 = sha256(weiboScript);
+      auditReport.plugins[spec.filename].mirroredScript = BASE + '/' + WEIBO_SCRIPT_LOCAL;
+    }
     console.log(`Converted and validated: ${spec.filename} (${Buffer.byteLength(plugin)} bytes)`);
   }
 
   // Write only after BOTH conversions and validations succeeded.
   for (const [filename, content] of generated) fs.writeFileSync(filename, content, 'utf8');
+  fs.mkdirSync('scripts', {recursive: true});
+  fs.writeFileSync(WEIBO_SCRIPT_LOCAL, weiboScript, 'utf8');
   fs.mkdirSync('reports', {recursive: true});
   fs.writeFileSync('reports/metadata.json', JSON.stringify(auditReport, null, 2) + '\n');
   fs.writeFileSync(STATE_PATH, JSON.stringify({
     last_success: now.toISOString(),
     sources: Object.fromEntries(specs.map(spec => [spec.filename, sha256(sourceBodies.get(spec.filename))])),
   }, null, 2) + '\n');
-  console.log('SUCCESS: both plugins are ready; display metadata adjusted and Loon rules retained.');
+  console.log('SUCCESS: both plugins and mirrored Weibo assistant script are ready; Loon display metadata updated.');
 } catch (error) {
   console.error(`SYNC FAILED; existing published plugins were not overwritten.\n${error.stack || error}`);
   process.exitCode = 1;
