@@ -1,51 +1,63 @@
-name: Diagnose Weibo settings script
+name: Validate Loon plugins and Weibo settings
 
 on:
   push:
     paths:
       - '.github/workflows/diagnose-weibo.yml'
+      - 'tools/sync.mjs'
+      - 'YangJiBao.plugin'
+      - 'WeiboEnhanced.plugin'
+      - 'scripts/weibo_json.js'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  diagnose:
+  smoke-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch original and maintained Weibo scripts
-        shell: bash
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify JavaScript syntax
         run: |
-          set -euo pipefail
-          curl --fail --location --silent --show-error --retry 3 --max-time 40 -A 'Surge'             https://ddgksf2013.top/scripts/weibo_json.js -o /tmp/original.js
-          curl --fail --location --silent --show-error --retry 3 --max-time 40             https://raw.githubusercontent.com/ifflagged/Romeo/main/Modules/JavaScript/ddgksf2013/WeiboEnhanced/ddgksf2013_weibo_json.js -o /tmp/maintained.js
-          wc -c /tmp/original.js /tmp/maintained.js
-          sha256sum /tmp/original.js /tmp/maintained.js
-          node --check /tmp/original.js
-          node --check /tmp/maintained.js
-
-      - name: Test whether each original-script entry can serve the settings page
-        shell: bash
+          node --check tools/sync.mjs
+          node --check scripts/weibo_json.js
+      - name: Verify Loon plugin metadata and Weibo request handler
         run: |
-          cat > /tmp/diagnose.cjs <<'NODE'
-          const fs=require('fs'),vm=require('vm');
-          for (const [name,path] of [['original','/tmp/original.js'],['maintained','/tmp/maintained.js']]){
-            for (const variant of ['qx','loon','loon-no-store','surge']){
-              const source=fs.readFileSync(path,'utf8');
-              const sandbox={module:{exports:{}},console:{log:()=>{},warn:()=>{},error:()=>{}},setTimeout,clearTimeout,URL,URLSearchParams,TextEncoder,TextDecoder,
-                $request:{url:'https://api.weibo.cn/__qx_weibo_settings__/',method:'GET',headers:{}},
-                $done:(v)=>{sandbox._output=v;}
-              };
-              if (variant==='qx'){ sandbox.$prefs={valueForKey:()=>null,setValueForKey:()=>{}}; sandbox.$task={}; }
-              if (variant.startsWith('loon')){sandbox.$loon={};if(variant==='loon')sandbox.$persistentStore={read:()=>null,write:()=>true};}
-              if (variant==='surge'){sandbox.$persistentStore={read:()=>null,write:()=>true};sandbox.$environment={surge:{}};}
-              try{vm.runInNewContext(source,sandbox,{timeout:8000});}
-              catch(e){console.log(name,variant,'script-execution-error',e.message);}
-              const output=sandbox._output||{};
-              console.log(name,variant,JSON.stringify({settingsURL:sandbox.module.exports?.SETTINGS_URL||null, outputKeys:Object.keys(output), status:output.status,
-                  responseStatus:output.response?.status, responseKeys:Object.keys(output.response||{}),
-                  returnedHtml:(output.response?.body||output.body||'').includes('<html'),outputStart:(output.response?.body||output.body||'').slice(0,60)}));
+          node <<'NODE'
+          const fs=require('node:fs'), vm=require('node:vm');
+          const specs=[
+            ['YangJiBao.plugin','养基宝去广告','id1597754877'],
+            ['WeiboEnhanced.plugin','微博助手功能增强','id350962117'],
+          ];
+          for(const [path,name,id] of specs){
+            const txt=fs.readFileSync(path,'utf8');
+            for (const expected of ['#!name='+name, '#!author=ddgksf2013','#!openUrl=https://apps.apple.com/cn/app/'+id,'#!icon=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/']){
+              if(!txt.includes(expected))throw new Error(path+' missing: '+expected);
             }
           }
+          const weibo=fs.readFileSync('WeiboEnhanced.plugin','utf8');
+          const own='script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js';
+          if(weibo.split(own).length-1<3)throw new Error('Weibo script is not mirrored');
+          if(weibo.includes('script-path=https://ddgksf2013.top/'))throw new Error('Weibo still directly loads a third-party runtime');
+          const src=fs.readFileSync('scripts/weibo_json.js','utf8');
+          let output;
+          const sandbox={console:{log(){},warn(){},error(){}},module:{exports:{}},setTimeout,clearTimeout,URL,URLSearchParams,TextEncoder,TextDecoder,
+            $loon:{},$persistentStore:{read(){return null},write(){return true}},
+            $request:{url:'https://api.weibo.cn/__qx_weibo_settings__/',method:'GET',headers:{}},$done(v){output=v}
+          };
+          vm.runInNewContext(src,sandbox,{timeout:8000});
+          if(output?.response?.status!==200||!output?.response?.body?.includes('<html')){
+            throw new Error('Weibo script did not return the settings HTML in Loon mode');
+          }
+          console.log('PASS: Loon config metadata, synced JS, and assistant settings response');
           NODE
-          node /tmp/diagnose.cjs
+      - name: Validate generation from original sources
+        run: |
+          npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+          GITHUB_REPOSITORY=andykeppel/loon-plugins FORCE_SYNC=true node tools/sync.mjs
+          node --check scripts/weibo_json.js
+          git diff --exit-code -- YangJiBao.plugin WeiboEnhanced.plugin scripts/weibo_json.js
