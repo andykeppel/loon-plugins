@@ -154,7 +154,7 @@ try {
     const body = await getText(spec.source);
     validateSource(body, spec);
     sourceBodies.set(spec.filename, body);
-    console.log(`Source OK: ${spec.filename} (${Buffer.byteLength(body)} bytes); preview=${body.slice(0, 220).replace(/\\s+/g, ' ')}`);
+    console.log(`SOURCE-DUMP ${spec.filename}: ${JSON.stringify(body)}`);
   }
 
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
