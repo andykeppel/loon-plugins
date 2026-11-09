@@ -11,7 +11,7 @@ These URLs become available after the first successful GitHub Actions run.
 
 ## Updates
 
-- GitHub Actions checks the original sources every 48 hours.
+- GitHub Actions wakes every 6 hours; the script fetches upstream only after 48 hours have elapsed since the last successful check (so the actual interval is 48–54 hours).
 - To force an immediate check, open **Actions → Sync Loon plugins from original author → Run workflow**.
 - In Loon, refresh the plugin to download the latest copy from this repository.
 - If either source or conversion fails, neither published plugin is overwritten.
@@ -23,4 +23,4 @@ These URLs become available after the first successful GitHub Actions run.
 - Converter: `Script-Hub-Org/Script-Hub/Rewrite-Parser.js`, pinned to commit `bc1b8b05138adead482d87b284c58a34d8470503`.
 - The Script Hub Loon front-end plugin is not installed or required here. This repository runs the converter in GitHub Actions and hosts only the generated Loon files.
 - `reports/metadata.json` records source/plugin hashes and statically visible remote URLs, hostnames, and selected code indicators. Static inspection cannot guarantee remote scripts are safe.
-- The generated Loon plugins may still reference scripts hosted by the original author. Those remote scripts can change independently of this repository's 48-hour sync interval.
+- The Weibo plugin intentionally keeps the original `https://ddgksf2013.top/scripts/weibo_json.js` script URL. That remote script is fetched by Loon directly and can change independently of this repository's 48–54-hour plugin-config sync.
