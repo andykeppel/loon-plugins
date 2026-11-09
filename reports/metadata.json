@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-11-09T17:40:23.214Z",
+  "checkedAt": "2026-11-09T17:44:17.251Z",
   "converter": "Script-Hub-Org/Script-Hub",
   "parserCommit": "bc1b8b05138adead482d87b284c58a34d8470503",
   "plugins": {
     "YangJiBao.plugin": {
       "source": "https://ddgksf2013.top/scripts/yangjibao.vip.js",
       "sourceSha256": "f1048e73c3d741e61fe6a86e39e7551e554bb0d32740e8ff90f96fd261a57f4a",
-      "pluginSha256": "cf3529a306d83af4223a70d09d7b5d6ea16ff38b0383a0429bf488a9ad46dbaa",
+      "pluginSha256": "ac785edd24ce68ce22701f1fa887a85d13088778a4ccf06ff6ebba2d8478229a",
       "remoteScriptUrls": [],
       "hostnames": [
         "hostname = *.yangjibao.com"
@@ -20,7 +20,7 @@
     "WeiboEnhanced.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
       "sourceSha256": "904a1e60e07225f875853bed2005bbd781c443916dca05ce834374ee9def7eab",
-      "pluginSha256": "5eef0082bb7505df46aee150a4217825b3c6976ada035d66b3fac8bf5806c550",
+      "pluginSha256": "b7c5f2d0b35fbce399e2ae9435931e2283df26849e4062a590e7c5c6b536f2c8",
       "remoteScriptUrls": [
         "https://ddgksf2013.top/scripts/weibo_json.js"
       ],
