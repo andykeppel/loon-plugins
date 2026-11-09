@@ -1,8 +1,6 @@
 name: Sync Loon plugins from original author
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
@@ -36,7 +34,7 @@ jobs:
         run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
       - name: Fetch original sources and build Loon plugins
         env:
-          FORCE_SYNC: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.force == true) }}
+          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true && 'true' || 'false' }}
         run: node tools/sync.mjs
       - name: Commit successful sync
         run: |
