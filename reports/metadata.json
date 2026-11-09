@@ -1,18 +1,18 @@
 {
-  "checkedAt": "2026-11-09T17:46:24.273Z",
+  "checkedAt": "2026-11-09T17:53:38.163Z",
   "converter": "Script-Hub-Org/Script-Hub",
   "parserCommit": "bc1b8b05138adead482d87b284c58a34d8470503",
   "plugins": {
     "YangJiBao.plugin": {
       "source": "https://ddgksf2013.top/scripts/yangjibao.vip.js",
       "sourceSha256": "f1048e73c3d741e61fe6a86e39e7551e554bb0d32740e8ff90f96fd261a57f4a",
-      "pluginSha256": "ac785edd24ce68ce22701f1fa887a85d13088778a4ccf06ff6ebba2d8478229a",
+      "pluginSha256": "ae64d4be8eb8d8e6438cf6bbda24b060271b337aeaaeb81ed4a2077d802a9d59",
       "remoteScriptUrls": [],
       "hostnames": [
         "hostname = *.yangjibao.com"
       ],
       "referencedUrls": [
-        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/YangJiBao.png"
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/YangJiBao.png?v=official-20261110"
       ],
       "sourceIndicators": [],
       "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee."
@@ -20,7 +20,7 @@
     "WeiboEnhanced.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
       "sourceSha256": "904a1e60e07225f875853bed2005bbd781c443916dca05ce834374ee9def7eab",
-      "pluginSha256": "b7c5f2d0b35fbce399e2ae9435931e2283df26849e4062a590e7c5c6b536f2c8",
+      "pluginSha256": "fa67a73b32171fe825a926a1e110feeaa388c89fb20575bd3486d6b39ad0b6f7",
       "remoteScriptUrls": [
         "https://ddgksf2013.top/scripts/weibo_json.js"
       ],
@@ -28,7 +28,7 @@
         "hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com"
       ],
       "referencedUrls": [
-        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png?v=official-20261110",
         "https://api\\.weibo\\.cn/__qx_weibo_settings__/(?:api/config)?(?=[?#]|$",
         "https://ddgksf2013.top/scripts/weibo_json.js",
         "https://api\\.weibo\\.cn/__qx_weibo_settings__/api/(?:save|reset)(?=[?#]|$"
