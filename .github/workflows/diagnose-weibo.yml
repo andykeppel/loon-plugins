@@ -30,21 +30,22 @@ jobs:
           cat > /tmp/diagnose.cjs <<'NODE'
           const fs=require('fs'),vm=require('vm');
           for (const [name,path] of [['original','/tmp/original.js'],['maintained','/tmp/maintained.js']]){
-            const source=fs.readFileSync(path,'utf8');
-            const exportsObj={};
-            const sandbox={module:{exports:exportsObj},console:{log:()=>{},warn:()=>{},error:()=>{}},setTimeout,clearTimeout,URL,URLSearchParams,TextEncoder,TextDecoder,
-              $persistentStore:{read:()=>null,write:()=>true}, $prefs:{valueForKey:()=>null,setValueForKey:()=>{}}, $httpClient:{get:()=>{},post:()=>{}},
-              $request:{url:'https://api.weibo.cn/__qx_weibo_settings__/',method:'GET',headers:{}},
-              $done:(v)=>{sandbox._output=v;}
-            };
-            try {vm.runInNewContext(source,sandbox,{timeout:8000});}
-            catch(e){console.log(name,'script-execution-error',e.message);}
-            const mod=sandbox.module.exports;
-            console.log(name,JSON.stringify({bytes:source.length,hasSettingsTokens:source.includes('__qx_weibo_settings__'),hasSettingsURL:!!mod?.SETTINGS_URL,
-              settingsURL:mod?.SETTINGS_URL||null, outputStatus:sandbox._output?.response?.status||sandbox._output?.status||null,
-              returnedHtml:(sandbox._output?.response?.body||sandbox._output?.body||'').includes('<html'), 
-              outputKeys:Object.keys(sandbox._output||{}),outputStart:(sandbox._output?.response?.body||sandbox._output?.body||'').slice(0,110)
-            }));
+            for (const variant of ['qx','loon','loon-no-store','surge']){
+              const source=fs.readFileSync(path,'utf8');
+              const sandbox={module:{exports:{}},console:{log:()=>{},warn:()=>{},error:()=>{}},setTimeout,clearTimeout,URL,URLSearchParams,TextEncoder,TextDecoder,
+                $request:{url:'https://api.weibo.cn/__qx_weibo_settings__/',method:'GET',headers:{}},
+                $done:(v)=>{sandbox._output=v;}
+              };
+              if (variant==='qx'){ sandbox.$prefs={valueForKey:()=>null,setValueForKey:()=>{}}; sandbox.$task={}; }
+              if (variant.startsWith('loon')){sandbox.$loon={};if(variant==='loon')sandbox.$persistentStore={read:()=>null,write:()=>true};}
+              if (variant==='surge'){sandbox.$persistentStore={read:()=>null,write:()=>true};sandbox.$environment={surge:{}};}
+              try{vm.runInNewContext(source,sandbox,{timeout:8000});}
+              catch(e){console.log(name,variant,'script-execution-error',e.message);}
+              const output=sandbox._output||{};
+              console.log(name,variant,JSON.stringify({settingsURL:sandbox.module.exports?.SETTINGS_URL||null, outputKeys:Object.keys(output), status:output.status,
+                  responseStatus:output.response?.status, responseKeys:Object.keys(output.response||{}),
+                  returnedHtml:(output.response?.body||output.body||'').includes('<html'),outputStart:(output.response?.body||output.body||'').slice(0,60)}));
+            }
           }
           NODE
           node /tmp/diagnose.cjs
