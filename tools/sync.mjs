@@ -1,6 +1,6 @@
 /**
- * Loon plugin mirror. Only the icon metadata is changed after Script Hub conversion.
- * Original author and all generated rules/scripts remain untouched.
+ * Loon plugin mirror. Display name, author, App Store link and icon are customized.
+ * Original author and all generated rules remain untouched.
  */
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -27,6 +27,8 @@ if (process.env.FORCE_SYNC !== 'true' && state.last_success && now - new Date(st
 const specs = [
   {
     filename: 'YangJiBao.plugin',
+    displayName: '养基宝去广告',
+    appStoreUrl: 'https://apps.apple.com/cn/app/id1597754877',
     outputName: 'yangjibao.vip.sgmodule',
     icon: 'YangJiBao.png',
     source: 'https://ddgksf2013.top/scripts/yangjibao.vip.js',
@@ -36,6 +38,8 @@ const specs = [
   },
   {
     filename: 'WeiboEnhanced.plugin',
+    displayName: '微博助手功能增强',
+    appStoreUrl: 'https://apps.apple.com/cn/app/id350962117',
     outputName: 'WeiboEnhanced.sgmodule',
     icon: 'WeiboEnhanced.png',
     source: 'https://ddgksf2013.top/rewrite/WeiboEnhanced.conf',
@@ -123,29 +127,33 @@ function convertWithScriptHub(parser, spec, source) {
   });
 }
 
-function replaceIconOnly(plugin, spec) {
-  if (!/^\s*#!name\s*=/mi.test(plugin)) throw new Error(`Converted output has no Loon plugin name: ${spec.filename}`);
-  const header = plugin.split(/\n\s*\[/, 1)[0];
-  if (!/ddgksf2013/i.test(header)) throw new Error(`Converted header does not preserve the original ddgksf2013 attribution: ${spec.filename}`);
-  if (!/^\s*\[(?:Script|Rewrite|URL Rewrite|Rule)\]/mi.test(plugin)) throw new Error(`Converted output has no recognizable Loon sections: ${spec.filename}; preview=${plugin.slice(0, 900).replace(/\\s+/g, ' ')}`);
-  if (/Script Hub 重写转换.*❌|#!error\s*=/i.test(plugin)) throw new Error(`Converter returned an error for ${spec.filename}`);
-
+function customizePlugin(plugin, spec) {
+  if (!/^\s*#!name\s*=/mi.test(plugin)) throw new Error('Missing plugin name: ' + spec.filename);
   const lines = plugin.replace(/\r\n/g, '\n').split('\n');
-  const iconLine = `#!icon=${BASE}/icons/${spec.icon}?v=official-20261110`;
-  let found = false;
-  for (let index = 0; index < lines.length; index++) {
-    if (/^\s*#!icon\s*=/i.test(lines[index])) {
-      if (!found) {
-        lines[index] = iconLine;
-        found = true;
-      } else {
-        lines[index] = '';
-      }
-    }
-  }
-  if (!found) lines.unshift(iconLine);
-  // No author, rules, scripts, URLs, or other plugin metadata are rewritten.
-  return lines.join('\n').replace(/\n*$/, '\n');
+  const firstSection = lines.findIndex(line => /^\s*\[[A-Za-z][^\]]*\]\s*$/.test(line));
+  if (firstSection < 0) throw new Error('Missing Loon configuration sections: ' + spec.filename);
+  const sourceHeader = lines.slice(0, firstSection);
+  if (!sourceHeader.some(line => /ddgksf2013/i.test(line))) throw new Error('Original author attribution missing: ' + spec.filename);
+  const originalDesc = sourceHeader.find(line => /^\s*#!desc\s*=/i.test(line))?.replace(/^\s*#!desc\s*=/i, '').trim() || '全面净化';
+  const recognized = new Set(['name', 'desc', 'author', 'homepage', 'openurl', 'icon', 'tag']);
+  const preserved = sourceHeader.filter(line => {
+    const match = line.match(/^\s*#!([\w]+)\s*=/);
+    return match && !recognized.has(match[1].toLowerCase());
+  });
+  const header = [
+    '#!name=' + spec.displayName,
+    '#!desc=' + originalDesc,
+    '#!author=ddgksf2013',
+    '#!homepage=https://github.com/ddgksf2013',
+    '#!openUrl=' + spec.appStoreUrl,
+    '#!icon=' + BASE + '/icons/' + spec.icon + '?v=official-20261110',
+    '#!tag=ddgksf2013',
+    ...preserved,
+    '',
+  ];
+  const output = [...header, ...lines.slice(firstSection)].join('\n').replace(/\n*$/, '\n');
+  if (!output.includes('https://apps.apple.com/cn/app/')) throw new Error('App Store URL missing');
+  return output;
 }
 
 function audit(spec, source, plugin) {
@@ -185,7 +193,7 @@ try {
   const auditReport = {checkedAt: now.toISOString(), converter: 'Script-Hub-Org/Script-Hub', parserCommit: PARSER_COMMIT, plugins: {}};
   for (const spec of specs) {
     const converted = await convertWithScriptHub(parser, spec, sourceBodies.get(spec.filename));
-    const plugin = replaceIconOnly(converted, spec);
+    const plugin = customizePlugin(converted, spec);
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
     console.log(`Converted and validated: ${spec.filename} (${Buffer.byteLength(plugin)} bytes)`);
@@ -199,7 +207,7 @@ try {
     last_success: now.toISOString(),
     sources: Object.fromEntries(specs.map(spec => [spec.filename, sha256(sourceBodies.get(spec.filename))])),
   }, null, 2) + '\n');
-  console.log('SUCCESS: both plugins are ready; only #!icon metadata was changed.');
+  console.log('SUCCESS: both plugins are ready; display metadata adjusted and Loon rules retained.');
 } catch (error) {
   console.error(`SYNC FAILED; existing published plugins were not overwritten.\n${error.stack || error}`);
   process.exitCode = 1;
