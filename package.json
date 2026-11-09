@@ -1,0 +1,8 @@
+{
+  "name": "loon-plugin-mirror",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"sync": "node tools/sync.mjs"},
+  "dependencies": {"got": "11.8.6", "tough-cookie": "4.1.4", "iconv-lite": "0.6.3"}
+}

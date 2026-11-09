@@ -1,0 +1,49 @@
+name: Sync Loon plugins from original author
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Force an immediate upstream check
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loon-plugin-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install converter dependencies
+        run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+      - name: Fetch original sources and build Loon plugins
+        env:
+          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true && 'true' || 'false' }}
+        run: node tools/sync.mjs
+      - name: Commit successful sync
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .last-sync.json YangJiBao.plugin WeiboEnhanced.plugin reports/metadata.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: sync Loon plugins from original sources'
+            git push
+          fi
