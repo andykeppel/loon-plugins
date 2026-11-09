@@ -4,11 +4,6 @@ on:
   push:
     paths:
       - '.github/workflows/diagnose-weibo.yml'
-      - 'tools/sync.mjs'
-      - 'tools/verify.mjs'
-      - 'YangJiBao.plugin'
-      - 'WeiboEnhanced.plugin'
-      - 'scripts/weibo_json.js'
   workflow_dispatch:
 
 permissions:
