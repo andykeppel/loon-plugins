@@ -27,17 +27,20 @@ if (process.env.FORCE_SYNC !== 'true' && state.last_success && now - new Date(st
 const specs = [
   {
     filename: 'YangJiBao.plugin',
+    outputName: 'yangjibao.vip.sgmodule',
     icon: 'YangJiBao.png',
     source: 'https://ddgksf2013.top/scripts/yangjibao.vip.js',
-    hub: 'http://script.hub/file/_start_/https://ddgksf2013.top/scripts/yangjibao.vip.js/_end_/yangjibao.vip.sgmodule?type=qx-rewrite&n=%E5%85%BB%E5%9F%BA%E5%AE%9D%E5%8E%BB%E5%B9%BF%E5%91%8A%40ddgksf2013+%E5%85%A8%E9%9D%A2%E5%87%80%E5%8C%96&headers=User-Agent:surge&del=true&jqEnabled=true&target=loon-plugin&category=ddgksf2013',
-    sourceKind: 'javascript',
+    nameArg: '养基宝去广告@ddgksf2013+全面净化',
+    category: 'ddgksf2013',
+    stripLeadingBlockComment: true,
   },
   {
     filename: 'WeiboEnhanced.plugin',
+    outputName: 'WeiboEnhanced.sgmodule',
     icon: 'WeiboEnhanced.png',
     source: 'https://ddgksf2013.top/rewrite/WeiboEnhanced.conf',
-    hub: 'http://script.hub/file/_start_/https://ddgksf2013.top/rewrite/WeiboEnhanced.conf/_end_/WeiboEnhanced.sgmodule?type=qx-rewrite&n=%E5%BE%AE%E5%8D%9A%E5%8A%A9%E6%89%8B%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA%40ddgksf2013+%E5%85%A8%E9%9D%A2%E8%87%AA%E5%AE%9A%E4%B9%89&headers=User-Agent:surge&del=true&jqEnabled=true&target=loon-plugin&category=ddgksf2013',
-    sourceKind: 'javascript',
+    nameArg: '微博助手功能增强@ddgksf2013+全面自定义',
+    category: 'ddgksf2013',
   },
 ];
 
@@ -60,17 +63,32 @@ async function getText(url, headers = {}, maxBytes = 1024 * 1024) {
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 
 function validateSource(body, spec) {
-  if (spec.sourceKind === 'config') {
-    if (!/^\s*\[[^\]]+\]/m.test(body)) throw new Error(`Expected a QX/Surge rewrite config: ${spec.source}; preview=${body.slice(0, 240).replace(/\s+/g, ' ')}`);
-    return;
-  }
-  // YangJiBao is supplied as a standalone JavaScript script, not a .conf file.
-  if (body.trim().length < 32 || /^(?:not found|forbidden|access denied|error\\b)/i.test(body.trim())) {
-    throw new Error(`The JavaScript source looks like an error response: ${spec.source}; preview=${body.slice(0, 120).replace(/\\s+/g, ' ')}`);
+  if (!/^\s*hostname\s*=/mi.test(body) || !/\surl\s+(?:jsonjq-|script-)/i.test(body)) {
+    throw new Error(`Expected the original rewrite snippet, not an error page: ${spec.source}`);
   }
 }
 
-function convertWithScriptHub(parser, spec) {
+function buildLocalTextUrl(spec, source) {
+  // Script Hub strips a leading block comment incorrectly, discarding the rules after it.
+  // Remove only YangJiBao's descriptive header comment; keep every functional rule intact.
+  const localSource = spec.stripLeadingBlockComment
+    ? source.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '')
+    : source;
+  const n = spec.nameArg.split('+').map(encodeURIComponent).join('+');
+  const query = [
+    'type=qx-rewrite',
+    `n=${n}`,
+    'headers=User-Agent:surge',
+    'del=true',
+    'jqEnabled=true',
+    'target=loon-plugin',
+    `category=${encodeURIComponent(spec.category)}`,
+    `localtext=${encodeURIComponent(localSource)}`,
+  ].join('&');
+  return `http://script.hub/file/_start_/http://local.text/_end_/${spec.outputName}?${query}`;
+}
+
+function convertWithScriptHub(parser, spec, source) {
   return new Promise((resolve, reject) => {
     let completed = false;
     const timeout = setTimeout(() => {
@@ -92,7 +110,7 @@ function convertWithScriptHub(parser, spec) {
     };
     const context = {
       require, module: {exports: {}}, process, Buffer, console, setTimeout, clearTimeout,
-      $request: {url: spec.hub}, $argument: 'Notify=关闭通知',
+      $request: {url: buildLocalTextUrl(spec, source)}, $argument: 'Notify=关闭通知',
       __captureScriptHub: capture,
     };
     try {
@@ -154,7 +172,7 @@ try {
     const body = await getText(spec.source);
     validateSource(body, spec);
     sourceBodies.set(spec.filename, body);
-    console.log(`SOURCE-DUMP ${spec.filename}: ${JSON.stringify(body)}`);
+    console.log(`Source OK: ${spec.filename} (${Buffer.byteLength(body)} bytes)`);
   }
 
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
@@ -166,7 +184,7 @@ try {
   const generated = new Map();
   const auditReport = {checkedAt: now.toISOString(), converter: 'Script-Hub-Org/Script-Hub', parserCommit: PARSER_COMMIT, plugins: {}};
   for (const spec of specs) {
-    const converted = await convertWithScriptHub(parser, spec);
+    const converted = await convertWithScriptHub(parser, spec, sourceBodies.get(spec.filename));
     const plugin = replaceIconOnly(converted, spec);
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
