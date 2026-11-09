@@ -131,7 +131,7 @@ function replaceIconOnly(plugin, spec) {
   if (/Script Hub 重写转换.*❌|#!error\s*=/i.test(plugin)) throw new Error(`Converter returned an error for ${spec.filename}`);
 
   const lines = plugin.replace(/\r\n/g, '\n').split('\n');
-  const iconLine = `#!icon = ${BASE}/icons/${spec.icon}`;
+  const iconLine = `#!icon=${BASE}/icons/${spec.icon}`;
   let found = false;
   for (let index = 0; index < lines.length; index++) {
     if (/^\s*#!icon\s*=/i.test(lines[index])) {
