@@ -37,7 +37,7 @@ const specs = [
     icon: 'WeiboEnhanced.png',
     source: 'https://ddgksf2013.top/rewrite/WeiboEnhanced.conf',
     hub: 'http://script.hub/file/_start_/https://ddgksf2013.top/rewrite/WeiboEnhanced.conf/_end_/WeiboEnhanced.sgmodule?type=qx-rewrite&n=%E5%BE%AE%E5%8D%9A%E5%8A%A9%E6%89%8B%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA%40ddgksf2013+%E5%85%A8%E9%9D%A2%E8%87%AA%E5%AE%9A%E4%B9%89&headers=User-Agent:surge&del=true&jqEnabled=true&target=loon-plugin&category=ddgksf2013',
-    sourceKind: 'config',
+    sourceKind: 'javascript',
   },
 ];
 
@@ -154,7 +154,7 @@ try {
     const body = await getText(spec.source);
     validateSource(body, spec);
     sourceBodies.set(spec.filename, body);
-    console.log(`Source OK: ${spec.filename} (${Buffer.byteLength(body)} bytes)`);
+    console.log(`Source OK: ${spec.filename} (${Buffer.byteLength(body)} bytes); preview=${body.slice(0, 220).replace(/\\s+/g, ' ')}`);
   }
 
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
