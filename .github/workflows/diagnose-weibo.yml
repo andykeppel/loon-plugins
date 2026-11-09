@@ -1,0 +1,50 @@
+name: Diagnose Weibo settings script
+
+on:
+  push:
+    paths:
+      - '.github/workflows/diagnose-weibo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch original and maintained Weibo scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 --max-time 40 -A 'Surge'             https://ddgksf2013.top/scripts/weibo_json.js -o /tmp/original.js
+          curl --fail --location --silent --show-error --retry 3 --max-time 40             https://raw.githubusercontent.com/ifflagged/Romeo/main/Modules/JavaScript/ddgksf2013/WeiboEnhanced/ddgksf2013_weibo_json.js -o /tmp/maintained.js
+          wc -c /tmp/original.js /tmp/maintained.js
+          sha256sum /tmp/original.js /tmp/maintained.js
+          node --check /tmp/original.js
+          node --check /tmp/maintained.js
+
+      - name: Test whether each original-script entry can serve the settings page
+        shell: bash
+        run: |
+          cat > /tmp/diagnose.cjs <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          for (const [name,path] of [['original','/tmp/original.js'],['maintained','/tmp/maintained.js']]){
+            const source=fs.readFileSync(path,'utf8');
+            const exportsObj={};
+            const sandbox={module:{exports:exportsObj},console:{log:()=>{},warn:()=>{},error:()=>{}},setTimeout,clearTimeout,URL,URLSearchParams,TextEncoder,TextDecoder,
+              $persistentStore:{read:()=>null,write:()=>true}, $prefs:{valueForKey:()=>null,setValueForKey:()=>{}}, $httpClient:{get:()=>{},post:()=>{}},
+              $request:{url:'https://api.weibo.cn/__qx_weibo_settings__/',method:'GET',headers:{}},
+              $done:(v)=>{sandbox._output=v;}
+            };
+            try {vm.runInNewContext(source,sandbox,{timeout:8000});}
+            catch(e){console.log(name,'script-execution-error',e.message);}
+            const mod=sandbox.module.exports;
+            console.log(name,JSON.stringify({bytes:source.length,hasSettingsTokens:source.includes('__qx_weibo_settings__'),hasSettingsURL:!!mod?.SETTINGS_URL,
+              settingsURL:mod?.SETTINGS_URL||null, outputStatus:sandbox._output?.response?.status||sandbox._output?.status||null,
+              returnedHtml:(sandbox._output?.response?.body||sandbox._output?.body||'').includes('<html'), 
+              outputKeys:Object.keys(sandbox._output||{}),outputStart:(sandbox._output?.response?.body||sandbox._output?.body||'').slice(0,110)
+            }));
+          }
+          NODE
+          node /tmp/diagnose.cjs
