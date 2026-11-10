@@ -108,17 +108,28 @@ function convert(snippet, script) {
  ].join('\n');
  return {plugin,counts:{rules:rules.length,rewrites:rewrites.length,scripts:scripts.length,mitmHosts:hostnames.split(',').length}};
 }
+function addMinimalDiagnostics(source) {
+ const anchor='const mtqxHideTabs =';
+ if(!source.includes(anchor))throw new Error('Meituan logging injection anchor missing');
+ const end='  if (changed) $done({ body: JSON.stringify(obj) });\n  else $done({});';
+ if(!source.includes(end))throw new Error('Meituan result handler has changed upstream; refusing to overwrite');
+ const startLog='console.log("[美团净化] 脚本命中：" + mtqxUrl.split("?")[0]);\n';
+ const updated=source.replace(anchor,startLog+anchor)
+   .replace(end,'  console.log("[美团净化] "+(changed?"已修改：":"命中但未修改：")+mtqxUrl.split("?")[0]);\n'+end);
+ return updated;
+}
 try{
  const [snippet,script,icon]=await Promise.all([getText(upstream+sourceSnippet),getText(upstream+sourceScript),officialIcon(423084029)]);
  const {plugin,counts}=convert(snippet,script);
+ const instrumented=addMinimalDiagnostics(script);
  console.log('Meituan converted:',JSON.stringify(counts));
  fs.mkdirSync('scripts',{recursive:true});
  fs.mkdirSync('icons',{recursive:true});
  fs.mkdirSync('reports',{recursive:true});
  fs.writeFileSync(pluginFile,plugin);
- fs.writeFileSync(scriptFile,script);
+ fs.writeFileSync(scriptFile,instrumented);
  fs.writeFileSync(iconFile,icon);
- fs.writeFileSync('reports/meituan-metadata.json',JSON.stringify({lastCheck:now.toISOString(),source:upstream+sourceSnippet,scriptSource:upstream+sourceScript,sourceHash:sha256(snippet),scriptHash:sha256(script),pluginHash:sha256(plugin),...counts},null,2)+'\n');
+ fs.writeFileSync('reports/meituan-metadata.json',JSON.stringify({lastCheck:now.toISOString(),source:upstream+sourceSnippet,scriptSource:upstream+sourceScript,sourceHash:sha256(snippet),scriptHash:sha256(script),mirroredScriptHash:sha256(instrumented),pluginHash:sha256(plugin),...counts},null,2)+'\n');
  fs.writeFileSync(stateFile,JSON.stringify({last_success:now.toISOString(),source_hash:sha256(snippet),script_hash:sha256(script)},null,2)+'\n');
  console.log('SUCCESS: ZenmoFeiShi Meituan original rules mirrored and converted.');
 }catch(e){console.error('Meituan sync failed, previous published plugin not overwritten:',e.stack||e);process.exitCode=1;}
