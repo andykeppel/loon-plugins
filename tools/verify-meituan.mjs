@@ -41,6 +41,7 @@ if(!tab?.body)throw new Error('Meituan tab cleaner did not return a modified bod
 const tabs=JSON.parse(tab.body).data.resource.tabArea.map(x=>x.tabName);
 if(tabs.includes('video')||!tabs.includes('homepage')||!tabs.includes('mine'))throw new Error('Meituan tabs incorrectly filtered: '+tabs);
 const feedCheck=run('https://feedguess.meituan.com/lycoris/scene/gwc_feed1_2265',{data:[{id:1}]});
+const feed=feedCheck.result;
 if(!feed?.body||JSON.parse(feed.body).data.length!==0)throw new Error('Meituan feed filter did not remove ads');
 const unmodifiedCheck=run('https://apimobile.meituan.com/other',{data:{ok:1}});
 const unmodified=unmodifiedCheck.result;
