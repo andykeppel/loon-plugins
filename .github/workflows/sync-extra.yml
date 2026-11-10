@@ -1,0 +1,58 @@
+name: Sync extra Loon plugins
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sync-extra.yml'
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Force an immediate upstream refresh
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loon-extra-plugin-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install JS dependencies
+        run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+      - name: Validate synchronizer syntax
+        run: node --check tools/sync-extra.mjs && node --check tools/verify-extra.mjs
+      - name: Generate 4 Loon plugins
+        env:
+          FORCE_SYNC: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.force == true) }}
+        run: node tools/sync-extra.mjs
+      - name: Verify generated plugin files and icons
+        run: node tools/verify-extra.mjs
+      - name: Commit successful updates
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add BiliBili.plugin BiliBiliLite.plugin StartUpAds.plugin JiJianHuiLv.plugin
+          git add scripts/bilibili.ads.js scripts/jijianhuilv.vip.js
+          git add icons/BiliBili.png icons/StartUpAds.png icons/JiJianHuiLv.png
+          git add .last-extra-sync.json reports/extra-metadata.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: sync four extra Loon modules from upstream'
+            git push
+          fi
