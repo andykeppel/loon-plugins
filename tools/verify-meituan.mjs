@@ -23,23 +23,31 @@ if(!scripts.every(x=>x.includes('scripts/MeiTuan.js')&&x.includes('requires-body
 if(icon.length<5000||icon.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw new Error('Not an official PNG icon');
 function run(url,obj){
  let result=null;
+ const messages=[];
  const sandbox={
    $request:{url},
    $response:{body:JSON.stringify(obj)},
    $done:x=>{result=x;},
-   console:{log:()=>{}}
+   console:{log:(v)=>messages.push(String(v))}
  };
  vm.runInNewContext(script,sandbox,{timeout:2000});
- return result;
+ return {result,messages};
 }
-const tab=run('https://apimobile.meituan.com/aggroup/indexTab',{
+const tabCheck=run('https://apimobile.meituan.com/aggroup/indexTab',{
  data:{resource:{tabArea:[{tabName:'homepage'},{tabName:'video'},{tabName:'mine'}]}}
 });
+const tab=tabCheck.result;
 if(!tab?.body)throw new Error('Meituan tab cleaner did not return a modified body');
 const tabs=JSON.parse(tab.body).data.resource.tabArea.map(x=>x.tabName);
 if(tabs.includes('video')||!tabs.includes('homepage')||!tabs.includes('mine'))throw new Error('Meituan tabs incorrectly filtered: '+tabs);
-const feed=run('https://feedguess.meituan.com/lycoris/scene/gwc_feed1_2265',{data:[{id:1}]});
+const feedCheck=run('https://feedguess.meituan.com/lycoris/scene/gwc_feed1_2265',{data:[{id:1}]});
 if(!feed?.body||JSON.parse(feed.body).data.length!==0)throw new Error('Meituan feed filter did not remove ads');
-const unmodified=run('https://apimobile.meituan.com/other',{data:{ok:1}});
+const unmodifiedCheck=run('https://apimobile.meituan.com/other',{data:{ok:1}});
+const unmodified=unmodifiedCheck.result;
 if(!unmodified||Object.keys(unmodified).length!==0)throw new Error('Unrelated request was modified');
+if (!tabCheck.messages.some(x=>x.includes('已修改：')) ||
+    !feedCheck.messages.some(x=>x.includes('已修改：')) ||
+    !unmodifiedCheck.messages.some(x=>x.includes('命中但未修改：'))) {
+ throw new Error('Local Meituan diagnostic logging missing');
+}
 console.log('PASS: ZenmoFeiShi source conversion, official icon, 8 script hooks, 2 rejects and JS fixture tests');
