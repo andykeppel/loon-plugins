@@ -158,6 +158,35 @@ function customizePlugin(plugin, spec) {
   return output;
 }
 
+function patchYangJiBaoPlugin(plugin) {
+  // Keep original JSON mutations. Fix only URL matches and apex-domain MitM.
+  // Stop the sync when the upstream rule format changes.
+  const oldAccount = String.raw`^https?:\/\/.*yangjibao\.com\/.*\/account|vip_info`;
+  const oldAd = String.raw`^https?:\/\/.*yangjibao.com\/unify_ad`;
+  const domain = String.raw`(?:[A-Za-z0-9-]+\.)*yangjibao\.com`;
+  const newAccount = String.raw`^https?:\/\/${domain}\/(?:[^?#]*\/)?(?:account|vip_info)(?:[/?#]|$)`;
+  const newAd = String.raw`^https?:\/\/${domain}\/(?:[^?#]*\/)?unify_ad(?:[/?#]|$)`;
+  let accountHits = 0, adHits = 0;
+  const updated = plugin.split('\n').map(line => {
+    if (line.startsWith(oldAccount + ' ') && line.includes('response-body-json-jq ') && line.includes('.data.vip_label=true')) {
+      accountHits++;
+      return newAccount + line.slice(oldAccount.length);
+    }
+    if (line.startsWith(oldAd + ' ') && line.includes("response-body-json-jq '.data=null'")) {
+      adHits++;
+      return newAd + line.slice(oldAd.length);
+    }
+    if (/^\s*hostname\s*=/.test(line) && line.includes('*.yangjibao.com')) {
+      return line.replace('hostname = *.yangjibao.com','hostname = yangjibao.com, *.yangjibao.com');
+    }
+    return line;
+  }).join('\n');
+  if (accountHits !== 1 || adHits !== 1 || !updated.includes('hostname = yangjibao.com, *.yangjibao.com')) {
+    throw new Error('YangJiBao source rewrite format changed; preserve previous published version');
+  }
+  return updated;
+}
+
 function audit(spec, source, plugin) {
   const urls = [...new Set((plugin.match(/https?:\/\/[^\s,;"'<>]+/g) || []).map(url => url.replace(/[)\]]$/, '')))];
   const scriptUrls = [...new Set((plugin.match(/script-path\s*=\s*https?:\/\/[^,\s]+/gi) || []).map(value => value.replace(/^script-path\s*=\s*/i, '')))];
@@ -206,6 +235,9 @@ try {
   for (const spec of specs) {
     const converted = await convertWithScriptHub(parser, spec, sourceBodies.get(spec.filename));
     let plugin = customizePlugin(converted, spec);
+    if (spec.filename === 'YangJiBao.plugin') {
+      plugin = patchYangJiBaoPlugin(plugin);
+    }
     if (spec.filename === 'WeiboEnhanced.plugin') {
       const originalPath = 'script-path=' + WEIBO_SCRIPT_SOURCE;
       const occurrences = plugin.split(originalPath).length - 1;
