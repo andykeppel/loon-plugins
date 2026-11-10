@@ -1,4 +1,4 @@
-name: Sync StartUpAds and Currency plugins
+name: Sync Currency plugin
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
         run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
       - name: Validate synchronizer syntax
         run: node --check tools/sync-extra.mjs && node --check tools/verify-extra.mjs
-      - name: Generate 2 Loon plugins
+      - name: Generate Currency plugin
         env:
           FORCE_SYNC: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.force == true) }}
         run: node tools/sync-extra.mjs
@@ -48,11 +48,11 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add StartUpAds.plugin JiJianHuiLv.plugin
+          git add JiJianHuiLv.plugin
           git add scripts/jijianhuilv.vip.js
           git add icons/JiJianHuiLv.png
           git add .last-extra-sync.json reports/extra-metadata.json
           if ! git diff --cached --quiet; then
-            git commit -m 'chore: sync StartUpAds and Currency from upstream'
+            git commit -m 'chore: sync Currency from upstream'
             git push
           fi
