@@ -1,4 +1,5 @@
 const mtqxUrl = (typeof $request !== "undefined" && $request && $request.url) || "";
+console.log("[美团净化] 脚本命中：" + mtqxUrl.split("?")[0]);
 const mtqxHideTabs = ["video", "xiaotuan"];
 const mtqxKeepTabs = ["homepage", "mine"];
 const mtqxFeedScenes = ["gwc_feed1_2265", "personalcenter_2154"];
@@ -135,6 +136,7 @@ function mtqxClearArea(root, key) {
   } catch (e) {
     changed = false;
   }
+  console.log("[美团净化] "+(changed?"已修改：":"命中但未修改：")+mtqxUrl.split("?")[0]);
   if (changed) $done({ body: JSON.stringify(obj) });
   else $done({});
 })();

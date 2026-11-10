@@ -1,9 +1,10 @@
 {
-  "lastCheck": "2026-11-10T06:12:40.470Z",
+  "lastCheck": "2026-11-10T07:06:19.465Z",
   "source": "https://raw.githubusercontent.com/ZenmoFeiShi/Qx/main/MT.snippet",
   "scriptSource": "https://raw.githubusercontent.com/ZenmoFeiShi/Qx/main/MT.js",
   "sourceHash": "e2c72b6676ad026b4f3c67f70614d7c2c7dafe0343c2dae4bb80b2762bf4e07a",
   "scriptHash": "9a48981f5d1cdac2d7c72c8f1164752ce712113eaf687aeeba2829e78c66308a",
+  "mirroredScriptHash": "02033feefbf256cd245bd33ac960659f8761c48cd6ea4cfb92ddf5101dabd9c1",
   "pluginHash": "0e16e457a5d8c4eca921451f051a21b633a61e0e0938a31816dfe7e15d174758",
   "rules": 46,
   "rewrites": 2,
