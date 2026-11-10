@@ -1,5 +1,5 @@
 /**
- * Independently synchronizes StartUpAds and JiJianHuiLv into Loon.
+ * Independently synchronizes JiJianHuiLv only into Loon.
  * Conversion uses the pinned Script Hub parser. Original contributors are credited.
  * Published files are only changed after all conversions and source checks pass.
  */
@@ -25,9 +25,6 @@ if(!force && state.last_success && checkedAt-new Date(state.last_success)<delay)
 }
 
 const specs=[
-  {file:'StartUpAds.plugin',short:'墨鱼去开屏',name:'墨鱼去开屏 2.0',desc:'墨鱼多应用开屏广告净化合集',
-    url:'https://ddgksf2013.top/rewrite/StartUpAds.conf',sourceName:'StartUpAds.conf',
-    icon:'StartUpAds.png',minRewrite:300,minScript:30,kind:'qx'},
   {file:'JiJianHuiLv.plugin',short:'极简汇率',name:'极简汇率',desc:'墨鱼极简汇率 Pro 脚本',
     url:'https://ddgksf2013.top/scripts/jijianhuilv.vip.js',sourceName:'jijianhuilv.vip.js',
     icon:'JiJianHuiLv.png',appId:851033695,minRewrite:0,minScript:1,kind:'js'},
@@ -74,7 +71,7 @@ function makeHeader(spec){
     '#!desc='+spec.desc,
     '#!author=ddgksf2013',
     '#!homepage=https://github.com/ddgksf2013',
-    '#!icon='+base+'/icons/'+spec.icon+(spec.file==='StartUpAds.plugin'?'?v=fastfish-20261110':'?v=official-20261110'),
+    '#!icon='+base+'/icons/'+spec.icon+'?v=official-20261110',
     '#!tag=ddgksf2013',
   ];
   if(spec.appId)lines.splice(4,0,'#!openUrl=https://apps.apple.com/cn/app/id'+spec.appId);
@@ -95,21 +92,9 @@ function validate(spec,body){
     if(!/hostname\s*=/i.test(body)||!/url\s+(?:reject|script|jsonjq)/i.test(body)){
       throw new Error('Not a complete QX rewrite: '+spec.url);
     }
-    if(spec.file==='StartUpAds.plugin'&&body.length<40000)throw new Error('Startup source truncated');
   } else {
     if(!body.includes('$response.body')||!body.includes('$done('))throw new Error('Missing JS response logic: '+spec.url);
   }
-}
-function optimizeStartupTimeouts(plugin) {
-  // Preserve all upstream patterns, actions, hostnames and JS sources.
-  // Cap delayed or failed response scripts at 15 seconds instead of 30/60.
-  const scriptLines=plugin.split('\n').filter(l=>/^http-(?:request|response)\s/.test(l));
-  const long=scriptLines.filter(l=>/\btimeout=(?:30|60)\b/.test(l));
-  if(scriptLines.length<30 || long.length<30)
-    throw new Error('Unexpected StartUpAds script timeout layout: review before publishing');
-  return plugin.split('\n').map(l=>
-    /^http-(?:request|response)\s/.test(l) ? l.replace(/\btimeout=(?:30|60)\b/g,'timeout=15') : l
-  ).join('\n');
 }
 function checkPlugin(spec,plugin){
   const arr=plugin.split('\n');
@@ -163,7 +148,6 @@ try{
     if(spec.kind==='qx'){
       const converted=await runParser(parser,spec,raw);
       built=metadata(spec,converted);
-      if(spec.file==='StartUpAds.plugin')built=optimizeStartupTimeouts(built);
     }else built=makeJSPlugin(spec,raw);
     const counts=checkPlugin(spec,built);
     output.set(spec.file,built);
@@ -173,10 +157,6 @@ try{
 
   const images=new Map();
   images.set('icons/JiJianHuiLv.png',await appIcon(851033695));
-  // StartUpAds is a rule collection, not an App Store application.
-  // The fixed, community-used Fastfish icon is checked into icons/StartUpAds.png.
-  // Keep it unchanged on subsequent upstream syncs.
-  if(!fs.existsSync('icons/StartUpAds.png'))throw new Error('Missing pinned StartUpAds icon');
 
   // All reads, conversions, content checks and icon checks complete.
   fs.mkdirSync('icons',{recursive:true});
@@ -187,7 +167,7 @@ try{
   for(const [file,body] of images)fs.writeFileSync(file,body);
   fs.writeFileSync('reports/extra-metadata.json',JSON.stringify(audits,null,2)+'\n');
   fs.writeFileSync(statePath,JSON.stringify({last_success:checkedAt.toISOString(),sources:Object.fromEntries(specs.map(s=>[s.file,sha256(inputs.get(s.file))]))},null,2)+'\n');
-  console.log('SUCCESS: 2 extra Loon plugins generated and validated.');
+  console.log('SUCCESS: 1 currency Loon plugin generated and validated.');
 }catch(e){
   console.error('SYNC FAILED; published plugins were not replaced: '+(e.stack||e));
   process.exitCode=1;
