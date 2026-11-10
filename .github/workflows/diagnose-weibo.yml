@@ -4,6 +4,10 @@ on:
   push:
     paths:
       - '.github/workflows/diagnose-weibo.yml'
+      - 'tools/sync.mjs'
+      - 'tools/verify.mjs'
+      - 'YangJiBao.plugin'
+      - 'WeiboEnhanced.plugin'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +25,7 @@ jobs:
           node-version: '20'
       - name: Check JavaScript syntax
         run: node --check tools/sync.mjs && node --check scripts/weibo_json.js && node --check tools/verify.mjs
-      - name: Verify plugin headers and Weibo settings
+      - name: Verify app rules and Weibo settings
         run: node tools/verify.mjs
       - name: Install conversion dependencies
         run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
