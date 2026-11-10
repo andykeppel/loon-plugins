@@ -1,5 +1,5 @@
 /**
- * Independently synchronizes four public ddgksf2013 rewrites into Loon.
+ * Independently synchronizes StartUpAds and JiJianHuiLv into Loon.
  * Conversion uses the pinned Script Hub parser. Original contributors are credited.
  * Published files are only changed after all conversions and source checks pass.
  */
@@ -25,12 +25,6 @@ if(!force && state.last_success && checkedAt-new Date(state.last_success)<delay)
 }
 
 const specs=[
-  {file:'BiliBili.plugin',short:'哔哩哔哩',name:'哔哩哔哩净化',desc:'墨鱼 Bilibili 完整广告净化',
-    url:'https://ddgksf2013.top/rewrite/BiliBiliAds.conf',sourceName:'BiliBiliAds.conf',
-    icon:'BiliBili.png',appId:736536022,minRewrite:6,minScript:12,kind:'qx'},
-  {file:'BiliBiliLite.plugin',short:'哔哩哔哩 Lite',name:'哔哩哔哩 Lite',desc:'墨鱼 Bilibili 精简去广告',
-    url:'https://ddgksf2013.top/rewrite/BiliBiliAdsLite.conf',sourceName:'BiliBiliAdsLite.conf',
-    icon:'BiliBili.png',appId:736536022,minRewrite:1,minScript:7,kind:'qx'},
   {file:'StartUpAds.plugin',short:'墨鱼去开屏',name:'墨鱼去开屏 2.0',desc:'墨鱼多应用开屏广告净化合集',
     url:'https://ddgksf2013.top/rewrite/StartUpAds.conf',sourceName:'StartUpAds.conf',
     icon:'StartUpAds.png',minRewrite:300,minScript:30,kind:'qx'},
@@ -40,9 +34,7 @@ const specs=[
 ];
 const sha256=s=>crypto.createHash('sha256').update(s).digest('hex');
 const prefix='https://ddgksf2013.top/scripts/';
-const biliScriptUrl=prefix+'bilibili.ads.js';
 const moneyScriptPath='scripts/jijianhuilv.vip.js';
-const biliScriptPath='scripts/bilibili.ads.js';
 
 async function getText(url,max=1024*1024){
   const r=await got(url,{headers:{'User-Agent':'Surge'},followRedirect:true,throwHttpErrors:false,
@@ -149,8 +141,6 @@ try{
     inputs.set(spec.file,body);
     console.log('Fetched '+spec.file+', bytes='+Buffer.byteLength(body));
   }
-  const biliJS=await getText(biliScriptUrl,3*1024*1024);
-  if(biliJS.length<500||!/(\$done|module\.exports)/.test(biliJS))throw new Error('Missing Bilibili script content');
   const parserOriginal=await getText(parserUrl,500000);
   const exit='case"Node.js":process.exit(1)';
   if(!parserOriginal.includes(exit))throw new Error('Pinned Script Hub runtime changed');
@@ -163,11 +153,6 @@ try{
     if(spec.kind==='qx'){
       const converted=await runParser(parser,spec,raw);
       built=metadata(spec,converted);
-      if(spec.file==='BiliBili.plugin'||spec.file==='BiliBiliLite.plugin'){
-        const before=built.split(biliScriptUrl).length-1;
-        if(before<spec.minScript-2)throw new Error('Bilibili rewrite lacks enough original script references: '+spec.file+' '+before);
-        built=built.split(biliScriptUrl).join(base+'/'+biliScriptPath);
-      }
     }else built=makeJSPlugin(spec,raw);
     const counts=checkPlugin(spec,built);
     output.set(spec.file,built);
@@ -176,25 +161,22 @@ try{
   }
 
   const images=new Map();
-  images.set('icons/BiliBili.png',await appIcon(736536022));
   images.set('icons/JiJianHuiLv.png',await appIcon(851033695));
-  // StartUpAds is a rule collection, not an App Store app. Keep a fixed adblock artwork.
-  const generic=await got('https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/mini/Advertising.png',
-    {responseType:'buffer',timeout:{request:25000},retry:{limit:1}});
-  if(generic.rawBody.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw new Error('Startup collection icon is not PNG');
-  images.set('icons/StartUpAds.png',generic.rawBody);
+  // StartUpAds is a rule collection, not an App Store application.
+  // The fixed, community-used Fastfish icon is checked into icons/StartUpAds.png.
+  // Keep it unchanged on subsequent upstream syncs.
+  if(!fs.existsSync('icons/StartUpAds.png'))throw new Error('Missing pinned StartUpAds icon');
 
   // All reads, conversions, content checks and icon checks complete.
   fs.mkdirSync('icons',{recursive:true});
   fs.mkdirSync('scripts',{recursive:true});
   fs.mkdirSync('reports',{recursive:true});
   for(const [file,body] of output)fs.writeFileSync(file,body,'utf8');
-  fs.writeFileSync(biliScriptPath,biliJS);
   fs.writeFileSync(moneyScriptPath,inputs.get('JiJianHuiLv.plugin'));
   for(const [file,body] of images)fs.writeFileSync(file,body);
   fs.writeFileSync('reports/extra-metadata.json',JSON.stringify(audits,null,2)+'\n');
   fs.writeFileSync(statePath,JSON.stringify({last_success:checkedAt.toISOString(),sources:Object.fromEntries(specs.map(s=>[s.file,sha256(inputs.get(s.file))]))},null,2)+'\n');
-  console.log('SUCCESS: 4 extra Loon plugins generated and validated.');
+  console.log('SUCCESS: 2 extra Loon plugins generated and validated.');
 }catch(e){
   console.error('SYNC FAILED; published plugins were not replaced: '+(e.stack||e));
   process.exitCode=1;
