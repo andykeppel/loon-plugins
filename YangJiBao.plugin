@@ -7,8 +7,8 @@
 #!tag=ddgksf2013
 
 [Rewrite]
-^https?:\/\/.*yangjibao\.com\/.*\/account|vip_info response-body-json-jq '.data.vip_label=true|.data.vip_expiry_date="2099-12-31"|.data.is_pay=true'
-^https?:\/\/.*yangjibao.com\/unify_ad response-body-json-jq '.data=null'
+^https?:\/\/(?:[A-Za-z0-9-]+\.)*yangjibao\.com\/(?:[^?#]*\/)?(?:account|vip_info)(?:[/?#]|$) response-body-json-jq '.data.vip_label=true|.data.vip_expiry_date="2099-12-31"|.data.is_pay=true'
+^https?:\/\/(?:[A-Za-z0-9-]+\.)*yangjibao\.com\/(?:[^?#]*\/)?unify_ad(?:[/?#]|$) response-body-json-jq '.data=null'
 
 [MITM]
-hostname = *.yangjibao.com
+hostname = yangjibao.com, *.yangjibao.com
