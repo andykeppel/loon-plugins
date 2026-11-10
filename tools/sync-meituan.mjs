@@ -69,7 +69,7 @@ function convert(snippet, script) {
     rewrites.push(m[1]+' - reject');
    }else {
     if(!m[3]?.endsWith('/MT.js'))throw new Error('Unexpected third-party script in upstream Meituan snippet: '+line);
-    scripts.push('http-response '+m[1]+' script-path='+base+'/'+scriptFile+', requires-body=true, timeout=10, tag=美团净化');
+    scripts.push('http-response '+m[1]+' script-path='+base+'/'+scriptFile+'?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化');
    }
    continue;
   }
