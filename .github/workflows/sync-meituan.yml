@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '.github/workflows/sync-meituan.yml'
+      - 'tools/sync-meituan.mjs'
+      - 'tools/verify-meituan.mjs'
   schedule:
     - cron: '53 */6 * * *'
   workflow_dispatch:
