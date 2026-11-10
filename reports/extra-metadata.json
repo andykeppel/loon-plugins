@@ -1,0 +1,76 @@
+{
+  "time": "2026-11-10T04:16:41.634Z",
+  "converter": "bc1b8b05138adead482d87b284c58a34d8470503",
+  "plugins": {
+    "BiliBili.plugin": {
+      "source": "https://ddgksf2013.top/rewrite/BiliBiliAds.conf",
+      "sourceSHA256": "aea71b564b077cee3def42cfa481bb151bc79ff6673f3ab9d0be88201458a2d7",
+      "pluginSHA256": "ad88f710d8fa6e92e4b6e4153e9232bde56d50a64341efc0dac0f3ff0bad49e7",
+      "rewrite": 9,
+      "script": 17,
+      "mitmHosts": "hostname = -broadcast.chat.bilibili.com, -cm.bilibili.com, -*cdn*.biliapi.net, -*tracker*.biliapi.net, app.bilibili.com, api.live.bilibili.com, *.bilibili.com, ",
+      "scriptPaths": [
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/bilibili.ads.js",
+        "https://github.com/BiliUniverse/ADBlock/releases/download/v0.6.19/response.bundle.js"
+      ]
+    },
+    "BiliBiliLite.plugin": {
+      "source": "https://ddgksf2013.top/rewrite/BiliBiliAdsLite.conf",
+      "sourceSHA256": "36fe0263f482d8df3a49c367eeedceaafb163022f394bed127f13dd319ec9bf9",
+      "pluginSHA256": "93b94708c8af7236ce95bc34fc97fceb937fde8326ba7bb486ed6a58981d3345",
+      "rewrite": 1,
+      "script": 7,
+      "mitmHosts": "hostname = app.bilibili.com",
+      "scriptPaths": [
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/bilibili.ads.js"
+      ]
+    },
+    "StartUpAds.plugin": {
+      "source": "https://ddgksf2013.top/rewrite/StartUpAds.conf",
+      "sourceSHA256": "9a3443554fe38d94c1b65d648c89f408c87574c674d4a7f4550c758d5d75639b",
+      "pluginSHA256": "a864aece50d4bce56b45681bf868cab77423fd3e0768d72cb03d28756f267396",
+      "rewrite": 431,
+      "script": 43,
+      "mitmHosts": "hostname = 101.226.30.36, 124.70.90.16, 123.249.33.119, 117.184.40.141, 140.207.67.231, ossx-link.ztehome.com.cn, yuudnn.lz-qs.com, marki.markiapp.com, misc.eol",
+      "scriptPaths": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/dict.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/555Ad.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/123pan.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/12306.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/ahfs.js",
+        "https://raw.githubusercontent.com/app2smile/rules/master/js/baidumap.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/baishitv.js",
+        "https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/scripts/replace-body.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caixinads.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/fly.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/hanglvzongheng.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/iqiyi_open_ads.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/ithome.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/startup.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/jd_json.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/coolapk.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/quark.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/abchina.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/pupumarket.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/pinganads.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/qidian.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/shunfeng_json.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/stay.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/smzdm_json.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/zhihu_openads.js"
+      ]
+    },
+    "JiJianHuiLv.plugin": {
+      "source": "https://ddgksf2013.top/scripts/jijianhuilv.vip.js",
+      "sourceSHA256": "eb85d4170ed58f3ba968afe20c3f1d623a29be11e864781d8cb7cff3f8f721cf",
+      "pluginSHA256": "7ecbedc531e4547f7a6d8634dddceca1a2a13b95a311eef11136f9c03317adbd",
+      "rewrite": 0,
+      "script": 1,
+      "mitmHosts": "hostname = explorer.tratao.com",
+      "scriptPaths": [
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/jijianhuilv.vip.js"
+      ]
+    }
+  }
+}

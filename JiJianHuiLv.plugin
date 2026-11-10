@@ -1,0 +1,13 @@
+#!name=极简汇率
+#!desc=墨鱼极简汇率 Pro 脚本
+#!author=ddgksf2013
+#!homepage=https://github.com/ddgksf2013
+#!openUrl=https://apps.apple.com/cn/app/id851033695
+#!icon=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/JiJianHuiLv.png?v=official-20261110
+#!tag=ddgksf2013
+
+[Script]
+http-response ^https?:\/\/explorer\.tratao\.com\/api\/client\/xtool\/vip(?:[/?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/jijianhuilv.vip.js, requires-body=true, timeout=60, tag=jijianhuilv.vip
+
+[MITM]
+hostname = explorer.tratao.com
