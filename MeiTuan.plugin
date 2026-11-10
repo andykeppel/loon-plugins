@@ -64,14 +64,14 @@ IP-CIDR6,2402:4e00:40:40::2:373/128,REJECT,no-resolve
 ^http:\/\/103\.37\.155\.60\/fetch - reject
 
 [Script]
-http-response ^https?:\/\/apimobile\.meituan\.com\/aggroup\/indexTab script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/feedguess\.meituan\.com\/lycoris\/scene\/(gwc_feed1_2265|personalcenter_2154)(\?|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/mt-personalcenter\.meituan\.com\/usercenter\/display script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/apimobile\.meituan\.com\/group\/v1\/deal\/searchpage\/defaultword script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/apimobile\.meituan\.com\/group\/v1\/deal\/searchpage\/hotword\/city\/divide\/hotrecommend\/ script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/assistify\.meituan\.com\/assistant\/getAppClientHornConfig script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/mop\.meituan\.com\/mop\/entry\/shoppingCartEntry script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
-http-response ^https?:\/\/mop\.meituan\.com\/api\/entryModule\/startupPicture script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/apimobile\.meituan\.com\/aggroup\/indexTab script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/feedguess\.meituan\.com\/lycoris\/scene\/(gwc_feed1_2265|personalcenter_2154)(\?|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/mt-personalcenter\.meituan\.com\/usercenter\/display script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/apimobile\.meituan\.com\/group\/v1\/deal\/searchpage\/defaultword script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/apimobile\.meituan\.com\/group\/v1\/deal\/searchpage\/hotword\/city\/divide\/hotrecommend\/ script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/assistify\.meituan\.com\/assistant\/getAppClientHornConfig script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/mop\.meituan\.com\/mop\/entry\/shoppingCartEntry script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
+http-response ^https?:\/\/mop\.meituan\.com\/api\/entryModule\/startupPicture script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/MeiTuan.js?v=diagnostic-20261110, requires-body=true, timeout=10, tag=美团净化
 
 [MITM]
 hostname = apimobile.meituan.com, feedguess.meituan.com, mop.meituan.com, mt-personalcenter.meituan.com, assistify.meituan.com, httpdns.meituan.com, httpdnsmultiapi.meituan.com
