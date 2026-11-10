@@ -15,6 +15,44 @@ for (const [filename, name, appId] of [
   for (const x of checks) if (!content.includes(x)) throw new Error(filename + ' missing ' + x);
 }
 
+// Check YangJiBao rewrite scope so upstream syncing cannot restore the old,
+// too-narrow ad matcher or the unrelated-host vip_info matcher.
+const yjb = fs.readFileSync('YangJiBao.plugin', 'utf8');
+const rewriteLines = yjb.split('\n').filter(line => line.includes('response-body-json-jq '));
+if (rewriteLines.length !== 2) throw new Error('Unexpected YangJiBao rewrite rule count: ' + rewriteLines.length);
+const findRewrite = token => {
+  const line = rewriteLines.find(line => line.includes(token));
+  if (!line) throw new Error('Missing YangJiBao rewrite: ' + token);
+  return new RegExp(line.split(' response-body-json-jq ')[0]);
+};
+const adRegex = findRewrite('unify_ad');
+const accountRegex = findRewrite('vip_info');
+const expectMatch = (re, url, expected) => {
+  if (re.test(url) !== expected) throw new Error('YangJiBao matcher mistake: ' + url + ' (' + re + ')');
+};
+[
+  'https://api.yangjibao.com/unify_ad',
+  'https://api.yangjibao.com/api/unify_ad',
+  'https://a.b.yangjibao.com/v2/unify_ad?client=ios',
+  'https://yangjibao.com/unify_ad',
+].forEach(url => expectMatch(adRegex, url, true));
+[
+  'https://api.notyangjibao.com/unify_ad',
+  'https://other.example.com/unify_ad',
+  'https://api.yangjibao.com/unify_ads',
+].forEach(url => expectMatch(adRegex, url, false));
+[
+  'https://api.yangjibao.com/wxapi/account',
+  'https://api.yangjibao.com/vip_info',
+].forEach(url => expectMatch(accountRegex, url, true));
+[
+  'https://someapp.example.com/vip_info',
+  'https://api.yangjibao.com/vip_information',
+].forEach(url => expectMatch(accountRegex, url, false));
+if (!yjb.includes('hostname = yangjibao.com, *.yangjibao.com')) {
+  throw new Error('YangJiBao apex hostname missing from MITM');
+}
+
 const plugin = fs.readFileSync('WeiboEnhanced.plugin', 'utf8');
 const mirrored = 'script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js';
 const occurrences = plugin.split(mirrored).length - 1;
