@@ -1,17 +1,19 @@
 {
-  "checkedAt": "2026-11-09T17:53:38.163Z",
+  "checkedAt": "2026-11-11T19:41:53.833Z",
   "converter": "Script-Hub-Org/Script-Hub",
   "parserCommit": "bc1b8b05138adead482d87b284c58a34d8470503",
   "plugins": {
     "YangJiBao.plugin": {
       "source": "https://ddgksf2013.top/scripts/yangjibao.vip.js",
       "sourceSha256": "f1048e73c3d741e61fe6a86e39e7551e554bb0d32740e8ff90f96fd261a57f4a",
-      "pluginSha256": "ae64d4be8eb8d8e6438cf6bbda24b060271b337aeaaeb81ed4a2077d802a9d59",
+      "pluginSha256": "d3d13a7db64a1896034660efbd7afacc65f302ea39ca550c4d6c2404f10099d8",
       "remoteScriptUrls": [],
       "hostnames": [
-        "hostname = *.yangjibao.com"
+        "hostname = yangjibao.com, *.yangjibao.com"
       ],
       "referencedUrls": [
+        "https://github.com/ddgksf2013",
+        "https://apps.apple.com/cn/app/id1597754877",
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/YangJiBao.png?v=official-20261110"
       ],
       "sourceIndicators": [],
@@ -20,21 +22,26 @@
     "WeiboEnhanced.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
       "sourceSha256": "904a1e60e07225f875853bed2005bbd781c443916dca05ce834374ee9def7eab",
-      "pluginSha256": "fa67a73b32171fe825a926a1e110feeaa388c89fb20575bd3486d6b39ad0b6f7",
+      "pluginSha256": "ea724755e14cbb98a3cdbede388ec0d7151c2c96e91d2a5a8cc253a6746b30b5",
       "remoteScriptUrls": [
-        "https://ddgksf2013.top/scripts/weibo_json.js"
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js"
       ],
       "hostnames": [
         "hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com"
       ],
       "referencedUrls": [
+        "https://github.com/ddgksf2013",
+        "https://apps.apple.com/cn/app/id350962117",
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png?v=official-20261110",
         "https://api\\.weibo\\.cn/__qx_weibo_settings__/(?:api/config)?(?=[?#]|$",
-        "https://ddgksf2013.top/scripts/weibo_json.js",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
         "https://api\\.weibo\\.cn/__qx_weibo_settings__/api/(?:save|reset)(?=[?#]|$"
       ],
       "sourceIndicators": [],
-      "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee."
+      "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee.",
+      "originalScript": "https://ddgksf2013.top/scripts/weibo_json.js",
+      "originalScriptSha256": "f40387dfd8bd70dc4477b8347823254a5eccf8cf9792c65fc35cef9140f00ca3",
+      "mirroredScript": "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js"
     }
   }
 }
