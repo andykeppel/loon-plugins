@@ -14,7 +14,7 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 
 **墨鱼去开屏 2.0（StartUpAds）和 BiliBili 完整版/Lite 已从本仓库删除，不再同步。**
 
-**Localdevvpn**: 仅对 `10.7.0.1/32` 启用 `include-tun`，对 `10.7.0.1` 使用 `reflect`；不设置 `ipv6-vif`，不修改其他代理规则、DNS、脚本或 MitM。需要 Loon 3.5.3(1007)+。Loon 的 `[Argument]` 不能动态修改这两项地址；如需更改回环 IP，须修改插件源码。App Store: https://apps.apple.com/us/app/localdevvpn/id6755608044。
+**Localdevvpn**: 仅对 `10.7.0.1/32` 启用 `include-tun`，对 `10.7.0.1` 使用 `reflect`；不设置 `ipv6-vif`，不修改其他代理规则、DNS、脚本或 MitM。需要 Loon 3.5.3(1007)+。**注意：启用期间所有 App 发往 10.7.0.1 的 IP 流量都会回环，不能按应用区分；若其他服务也使用此地址，可能冲突。** Loon 的 `[Argument]` 不能动态修改这两项地址；如需更改回环 IP，须修改插件源码。`#!source` 为可选元数据，此插件未声明，以避免从不同等效 GitHub URL 导入时出现来源警告。App Store: https://apps.apple.com/us/app/localdevvpn/id6755608044。
 
 ## Automatic source checks and manual update
 
