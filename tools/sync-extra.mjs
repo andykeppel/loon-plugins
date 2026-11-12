@@ -18,9 +18,9 @@ const statePath='.last-extra-sync.json';
 const state=fs.existsSync(statePath)?JSON.parse(fs.readFileSync(statePath,'utf8')):{};
 const force=process.env.FORCE_SYNC==='true';
 const checkedAt=new Date();
-const delay=48*60*60*1000;
+const delay=24*60*60*1000;
 if(!force && state.last_success && checkedAt-new Date(state.last_success)<delay){
-  console.log('Skip: most recent successful extra-plugin sync was less than 48 hours ago.');
+  console.log('Skip: most recent successful extra-plugin sync was less than 24 hours ago.');
   process.exit(0);
 }
 
