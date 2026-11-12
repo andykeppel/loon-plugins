@@ -1,0 +1,22 @@
+#!name = Localdevvpn
+#!desc = 仅将 10.7.0.1 回环到本机，适用于 SideStore/本地开发；不修改日常代理分流、IPv6、DNS 或 MitM。
+#!author = andykeppel
+#!homepage = https://apps.apple.com/us/app/localdevvpn/id6755608044
+#!icon = https://fastly.mwm-storage.mwmcdn.com/raw_files/1b72437d-90cd-4176-9714-7fd0a516e318
+#!source = df28bc9580a71941a32d43a07a2a7f6e8277dedbcc0c324adcbac5d4b30c41a8
+#!system = iOS,iPadOS
+#!loon_version = 3.5.3(1007)
+#!date = 2026-11-12
+#!tag = 开发工具,本机回环
+#!type = normal
+
+# App Store: https://apps.apple.com/us/app/localdevvpn/id6755608044
+# Only 10.7.0.1/32 is affected; disable this plugin to remove its route/rewrite.
+# Loon [Argument] cannot bind include-tun or IP Rewrite as of Build 1007.
+# IPv6 VIF settings are intentionally left untouched.
+
+[General]
+include-tun = 10.7.0.1/32
+
+[IP Rewrite]
+10.7.0.1 = reflect
