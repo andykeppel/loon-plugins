@@ -20,8 +20,8 @@ const iconFile='icons/MeiTuan.png';
 const now=new Date();
 const force=process.env.FORCE_SYNC==='true';
 const state=fs.existsSync(stateFile)?JSON.parse(fs.readFileSync(stateFile,'utf8')):{};
-if(!force && state.last_success && now-new Date(state.last_success)<48*60*60*1000){
- console.log('Meituan: skipped; checked upstream less than 48h ago.');
+if(!force && state.last_success && now-new Date(state.last_success)<24*60*60*1000){
+ console.log('Meituan: skipped; checked upstream less than 24h ago.');
  process.exit(0);
 }
 const sha256=data=>crypto.createHash('sha256').update(data).digest('hex');
