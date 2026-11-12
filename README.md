@@ -18,7 +18,7 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 
 ## Automatic source checks and manual update
 
-All workflows wake every 6 hours, fetch upstream only if 48 hours have elapsed since the previous successful check (usually a 48–54-hour interval), and allow a manual **Run workflow** action with forced refresh.
+Workflows wake every 6 hours and allow a manual **Run workflow** action with forced refresh. **Moyu (ddgksf2013) plugins** — YangJiBao, WeiboEnhanced and JiJianHuiLv — fetch upstream when at least 24 hours have elapsed since the last successful check (usually every 24–30 hours because of the 6-hour polling schedule). **Meituan (ZenmoFeiShi)** is unchanged at 48 hours (usually 48–54 hours).
 
 - [同步养基宝与微博助手](https://github.com/andykeppel/loon-plugins/actions/workflows/sync.yml)
 - [同步极简汇率](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-extra.yml)
