@@ -10,8 +10,11 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 | 微博助手功能增强 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/WeiboEnhanced.plugin |
 | 极简汇率 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/JiJianHuiLv.plugin |
 | 美团去广告 | ZenmoFeiShi (TG@ZenMoFiShi) | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/MeiTuan.plugin |
+| Localdevvpn 本机回环 | 本仓库维护（参考 Loon 官方文档） | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/Localdevvpn.plugin |
 
 **墨鱼去开屏 2.0（StartUpAds）和 BiliBili 完整版/Lite 已从本仓库删除，不再同步。**
+
+**Localdevvpn**: 仅对 `10.7.0.1/32` 启用 `include-tun`，对 `10.7.0.1` 使用 `reflect`；不设置 `ipv6-vif`，不修改其他代理规则、DNS、脚本或 MitM。需要 Loon 3.5.3(1007)+。Loon 的 `[Argument]` 不能动态修改这两项地址；如需更改回环 IP，须修改插件源码。App Store: https://apps.apple.com/us/app/localdevvpn/id6755608044。
 
 ## Automatic source checks and manual update
 
