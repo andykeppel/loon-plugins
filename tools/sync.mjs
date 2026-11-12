@@ -21,8 +21,8 @@ const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
-if (process.env.FORCE_SYNC !== 'true' && state.last_success && now - new Date(state.last_success) < 48 * 60 * 60 * 1000) {
-  console.log('Skipped: last successful upstream check was less than 48 hours ago.');
+if (process.env.FORCE_SYNC !== 'true' && state.last_success && now - new Date(state.last_success) < 24 * 60 * 60 * 1000) {
+  console.log('Skipped: last successful upstream check was less than 24 hours ago.');
   process.exit(0);
 }
 
