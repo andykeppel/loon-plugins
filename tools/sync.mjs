@@ -18,6 +18,7 @@ const PARSER_URL = `https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/
 const STATE_PATH = '.last-sync.json';
 const WEIBO_SCRIPT_SOURCE = 'https://ddgksf2013.top/scripts/weibo_json.js';
 const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
+const WEIBO_ADS_SCRIPT_LOCAL = 'scripts/weibo_ads_original.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
@@ -41,6 +42,16 @@ const specs = [
   {
     filename: 'WeiboEnhanced.plugin',
     displayName: '微博助手功能增强',
+    appStoreUrl: 'https://apps.apple.com/cn/app/id350962117',
+    outputName: 'WeiboEnhanced.sgmodule',
+    icon: 'WeiboEnhanced.png',
+    source: 'https://ddgksf2013.top/rewrite/WeiboEnhanced.conf',
+    nameArg: '微博助手功能增强@ddgksf2013+全面自定义',
+    category: 'ddgksf2013',
+  },
+  {
+    filename: 'WeiboCombined.plugin',
+    displayName: '微博助手合并版',
     appStoreUrl: 'https://apps.apple.com/cn/app/id350962117',
     outputName: 'WeiboEnhanced.sgmodule',
     icon: 'WeiboEnhanced.png',
@@ -199,6 +210,15 @@ function patchYangJiBaoPlugin(plugin) {
 
 
 
+function patchWeiboCombined(plugin) {
+  const argument = 'custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息动态广告和荐读';
+  plugin = plugin.replace(/^\[Script\]$/m, '[Argument]\n' + argument + '\n\n[Script]');
+  const rule = 'http-response ^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline script-path=' + BASE + '/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
+  plugin = plugin.replace(/^\[MITM\]$/m, '# 自定义功能：独立消息动态过滤\n' + rule + '\n\n[MITM]');
+  plugin = plugin.replace(/^(hostname\s*=\s*.*)$/mi, '$1, mapi.weibo.cn, api.weibo.com, mapi.weibo.com');
+  return plugin;
+}
+
 function audit(spec, source, plugin) {
   const urls = [...new Set((plugin.match(/https?:\/\/[^\s,;"'<>]+/g) || []).map(url => url.replace(/[)\]]$/, '')))];
   const scriptUrls = [...new Set((plugin.match(/script-path\s*=\s*https?:\/\/[^,\s]+/gi) || []).map(value => value.replace(/^script-path\s*=\s*/i, '')))];
@@ -236,6 +256,10 @@ try {
   }
   console.log('Weibo settings script fetched: ' + Buffer.byteLength(weiboScript) + ' bytes');
 
+  const adsScript = await getText('https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weibo_json.js', {'User-Agent': 'Loon-Mirror'}, 1024 * 1024);
+  if (adsScript.includes('createSettingsHandler') || adsScript.length < 8000) throw new Error('Original ad script is unexpected');
+  const combinedCleaner = fs.readFileSync('scripts/weibo_activity_clean.js','utf8');
+
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
   let parser = await getText(PARSER_URL, {'User-Agent': 'UNIONFUSION-GitHub-Actions'}, 400 * 1024);
   const nodeExit = 'case"Node.js":process.exit(1)';
@@ -250,12 +274,20 @@ try {
     if (spec.filename === 'YangJiBao.plugin') {
       plugin = patchYangJiBaoPlugin(plugin);
     }
-    if (spec.filename === 'WeiboEnhanced.plugin') {
+    if (spec.filename === 'WeiboEnhanced.plugin' || spec.filename === 'WeiboCombined.plugin') {
       const originalPath = 'script-path=' + WEIBO_SCRIPT_SOURCE;
       const occurrences = plugin.split(originalPath).length - 1;
       if (occurrences < 3) throw new Error('Expected Weibo script rules are missing; refusing incomplete conversion');
       plugin = plugin.split(originalPath).join('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL);
+      if (spec.filename === 'WeiboCombined.plugin') {
+        plugin = plugin.replace('#!name=微博助手合并版', '#!name=微博助手合并版');
+        plugin = patchWeiboCombined(plugin);
+      }
 
+    }
+    if (spec.filename === 'WeiboAds.plugin') {
+      plugin = plugin.replaceAll('/scripts/weibo_json.js','/scripts/weibo_ads_original.js');
+      plugin = plugin.replaceAll('https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js', BASE + '/' + WEIBO_ADS_SCRIPT_LOCAL);
     }
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
@@ -272,6 +304,7 @@ try {
   for (const [filename, content] of generated) fs.writeFileSync(filename, content, 'utf8');
   fs.mkdirSync('scripts', {recursive: true});
   fs.writeFileSync(WEIBO_SCRIPT_LOCAL, weiboScript, 'utf8');
+  fs.writeFileSync(WEIBO_ADS_SCRIPT_LOCAL, adsScript, 'utf8');
   fs.mkdirSync('reports', {recursive: true});
   fs.writeFileSync('reports/metadata.json', JSON.stringify(auditReport, null, 2) + '\n');
   fs.writeFileSync(STATE_PATH, JSON.stringify({

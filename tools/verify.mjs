@@ -4,7 +4,8 @@ import vm from 'node:vm';
 for (const [filename, name, appId] of [
   ['YangJiBao.plugin', '养基宝去广告', 'id1597754877'],
   ['WeiboEnhanced.plugin', '微博助手功能增强', 'id350962117'],
-  ['WeiboAds.plugin', '微博去广告', 'id350962117']
+  ['WeiboAds.plugin', '微博去广告', 'id350962117'],
+  ['WeiboCombined.plugin', '微博助手合并版', 'id350962117']
 ]) {
   const content = fs.readFileSync(filename, 'utf8');
   const checks = [
@@ -83,3 +84,11 @@ if (output?.response?.status !== 200 || !output?.response?.body?.includes('<html
   throw new Error('Weibo Loon settings page did not return HTTP 200 HTML');
 }
 console.log('PASS: names, author, official App Store URLs, GitHub mirror and Loon settings HTML response');
+
+const originalAds = fs.readFileSync('scripts/weibo_ads_original.js','utf8');
+const adsPlugin = fs.readFileSync('WeiboAds.plugin','utf8');
+const combinedPlugin = fs.readFileSync('WeiboCombined.plugin','utf8');
+if (originalAds.includes('createSettingsHandler')) throw new Error('Ads-only script includes assistant');
+if (!adsPlugin.includes('scripts/weibo_ads_original.js') || adsPlugin.includes('scripts/weibo_json.js')) throw new Error('Ads plugin uses assistant script');
+if (!combinedPlugin.includes('tag=weibo_message_ads, enable={custom}') || !combinedPlugin.includes('tag=自定义功能')) throw new Error('Combined switch missing');
+if (fs.readFileSync('WeiboEnhanced.plugin','utf8').includes('tag=自定义功能')) throw new Error('Original assistant has custom switch');

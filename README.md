@@ -46,3 +46,10 @@ The GitHub repository and associated workflows are independent of Script Hub's i
 
 - **微博助手功能增强**：仅同步墨鱼原版 WeiboEnhanced.conf，不再包含自定义开关或附加过滤脚本。
 - **微博去广告**：独立同步墨鱼 WeiboAds.conf（微博与轻享版去广告），转换为 Loon 插件。两者可能有相同请求规则，建议单独测试。
+
+### 微博三种独立插件
+- 原版助手：WeiboEnhanced.plugin，仅同步墨鱼增强助手。
+- 原版去广告：WeiboAds.plugin，独立使用墨鱼原始去广告脚本（不包含助手设置入口）。
+- 历史合并版：WeiboCombined.plugin，保留自定义功能开关与附加消息动态过滤。
+
+注意：原版助手和合并版存在相同设置端点，不应同时启用；去广告版与另两版部分请求重叠，建议单独测试。

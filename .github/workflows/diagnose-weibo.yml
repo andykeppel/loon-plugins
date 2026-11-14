@@ -9,6 +9,7 @@ on:
       - 'YangJiBao.plugin'
       - 'WeiboEnhanced.plugin'
       - 'WeiboAds.plugin'
+      - 'WeiboCombined.plugin'
   workflow_dispatch:
 
 permissions:
