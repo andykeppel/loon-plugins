@@ -43,3 +43,6 @@ Each workflow keeps previously published files if downloading, converting or val
 - **极简汇率**: mirrors the original script under `scripts/jijianhuilv.vip.js`.
 
 The GitHub repository and associated workflows are independent of Script Hub's iPhone front-end module. Source auditing is static, and upstream authors may change their code over time.
+
+- **微博助手功能增强**：仅同步墨鱼原版 WeiboEnhanced.conf，不再包含自定义开关或附加过滤脚本。
+- **微博去广告**：独立同步墨鱼 WeiboAds.conf（微博与轻享版去广告），转换为 Loon 插件。两者可能有相同请求规则，建议单独测试。
