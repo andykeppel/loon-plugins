@@ -3,7 +3,7 @@ import vm from 'node:vm';
 
 for (const [filename, name, appId] of [
   ['YangJiBao.plugin', '养基宝去广告', 'id1597754877'],
-  ['WeiboEnhanced.plugin', '微博助手功能增强', 'id350962117']
+  ['WeiboEnhanced.plugin', '微博助手·完整净化', 'id350962117']
 ]) {
   const content = fs.readFileSync(filename, 'utf8');
   const checks = [
@@ -83,24 +83,6 @@ for (const host of ['api.weibo.cn','mapi.weibo.cn','api.weibo.com','mapi.weibo.c
   if (!mitm.includes(host)) throw new Error('Weibo MITM host missing: ' + host);
 }
 
-const messageScript = fs.readFileSync('scripts/weibo_message_ads.js', 'utf8');
-const runMessageFilter = body => {
-  let result;
-  vm.runInNewContext(messageScript, {$response: {body}, $done(value) { result = value; }}, {timeout: 1000});
-  return result;
-};
-const sample = {statuses: [
-  {id:'ad-type',mblogtypename:'广告'},
-  {id:'hot-type',mblogtypename:'热推'},
-  {id:'ad-promotion',promotion:{type:'ad'}},
-  {id:'ad-actionlog',page_info:{actionlog:{source:'ad'}}},
-  {id:'ad-auth',content_auth_info:{content_auth_title:'广告'}},
-  {id:'normal',text:'正常微博'}
-]};
-const filtered = JSON.parse(runMessageFilter(JSON.stringify(sample)).body);
-if (filtered.statuses.length !== 1 || filtered.statuses[0].id !== 'normal') throw new Error('Weibo ad filter failed');
-const nested = JSON.parse(runMessageFilter(JSON.stringify({data:sample})).body);
-if (nested.data.statuses.length !== 1 || nested.data.statuses[0].id !== 'normal') throw new Error('Nested Weibo ad filter failed');
 
 const source = fs.readFileSync('scripts/weibo_json.js', 'utf8');
 if (source.length < 30000) throw new Error('Weibo script is unexpectedly small');

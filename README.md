@@ -39,7 +39,7 @@ Each workflow keeps previously published files if downloading, converting or val
 ## Other plugin notes
 
 - **养基宝**: URL matching fixes for nested `unify_ad` endpoints are applied locally after Script Hub conversion.
-- **微博助手**: its original author script is mirrored as `scripts/weibo_json.js` and serves a settings page. If the app's assistant panel cannot open, check Loon MITM and other script conflicts.
+
 - **极简汇率**: mirrors the original script under `scripts/jijianhuilv.vip.js`.
 
 The GitHub repository and associated workflows are independent of Script Hub's iPhone front-end module. Source auditing is static, and upstream authors may change their code over time.
