@@ -18,6 +18,7 @@ const PARSER_URL = `https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/
 const STATE_PATH = '.last-sync.json';
 const WEIBO_SCRIPT_SOURCE = 'https://ddgksf2013.top/scripts/weibo_json.js';
 const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
+const WEIBO_MESSAGE_ADS_SCRIPT_LOCAL = 'scripts/weibo_message_ads.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
@@ -187,6 +188,31 @@ function patchYangJiBaoPlugin(plugin) {
   return updated;
 }
 
+
+function patchWeiboMessageTimeline(plugin) {
+  const pattern = '^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$)';
+  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_MESSAGE_ADS_SCRIPT_LOCAL + ', requires-body=true, timeout=20, tag=weibo_message_ads';
+  if (!plugin.split('\n').some(line => line.includes('tag=weibo_message_ads'))) {
+    const mitmIndex = plugin.search(/^\[MITM\]/mi);
+    if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline ad filter');
+    plugin = plugin.slice(0, mitmIndex) +
+      '# 消息页“动态”信息流：仅过滤明确标记为广告/热推的微博\n' + rule + '\n\n' +
+      plugin.slice(mitmIndex);
+  }
+  const mitmLine = plugin.match(/^hostname\s*=.*$/mi)?.[0];
+  if (!mitmLine) throw new Error('Weibo MITM hostname list missing');
+  const hostnames = mitmLine.replace(/^hostname\s*=\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
+  for (const host of ['mapi.weibo.cn', 'api.weibo.com', 'mapi.weibo.com']) {
+    if (!hostnames.includes(host)) hostnames.push(host);
+  }
+  plugin = plugin.replace(mitmLine, 'hostname = ' + hostnames.join(', '));
+  if (!plugin.includes('script-path=' + BASE + '/' + WEIBO_MESSAGE_ADS_SCRIPT_LOCAL) ||
+      !plugin.includes('/statuses/(?:unread_)?friends(?:/|_)timeline')) {
+    throw new Error('Weibo message timeline ad filter was not installed');
+  }
+  return plugin;
+}
+
 function audit(spec, source, plugin) {
   const urls = [...new Set((plugin.match(/https?:\/\/[^\s,;"'<>]+/g) || []).map(url => url.replace(/[)\]]$/, '')))];
   const scriptUrls = [...new Set((plugin.match(/script-path\s*=\s*https?:\/\/[^,\s]+/gi) || []).map(value => value.replace(/^script-path\s*=\s*/i, '')))];
@@ -243,6 +269,7 @@ try {
       const occurrences = plugin.split(originalPath).length - 1;
       if (occurrences < 3) throw new Error('Expected Weibo script rules are missing; refusing incomplete conversion');
       plugin = plugin.split(originalPath).join('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL);
+      plugin = patchWeiboMessageTimeline(plugin);
     }
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
@@ -250,6 +277,7 @@ try {
       auditReport.plugins[spec.filename].originalScript = WEIBO_SCRIPT_SOURCE;
       auditReport.plugins[spec.filename].originalScriptSha256 = sha256(weiboScript);
       auditReport.plugins[spec.filename].mirroredScript = BASE + '/' + WEIBO_SCRIPT_LOCAL;
+      auditReport.plugins[spec.filename].localPatches = ['Messages > Activity feed ad filtering for /statuses/(unread_)?friends(/|_)timeline'];
     }
     console.log(`Converted and validated: ${spec.filename} (${Buffer.byteLength(plugin)} bytes)`);
   }
