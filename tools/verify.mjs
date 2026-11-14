@@ -60,10 +60,14 @@ if (occurrences < 3 || plugin.includes('script-path=https://ddgksf2013.top/')) {
   throw new Error('Weibo script URLs not properly self-hosted: ' + occurrences);
 }
 
+const argumentBlock = plugin.match(/^\[Argument\]\s*\n([\s\S]*?)(?=^\[)/m)?.[1] || '';
+if (!/^custom\s*=\s*switch,false,type=boolean,tag=自定义功能,/m.test(argumentBlock)) {
+  throw new Error('Weibo custom feature switch missing or default is not off');
+}
 const messageRule = plugin.split('\n').find(line => line.includes('tag=weibo_message_ads'));
 if (!messageRule) throw new Error('Weibo message timeline ad rule missing');
 if (!messageRule.includes('scripts/weibo_json.js')) throw new Error('Message timeline must reuse the full MoYu Weibo cleaner');
-if (messageRule.includes('weibo_message_ads.js')) throw new Error('Legacy simplified message filter must not be used');
+if (!messageRule.includes('enable={custom}')) throw new Error('Message timeline cleaner is not controlled by the custom switch');
 const messagePattern = messageRule.match(/^http-response\s+(.+?)\s+script-path=/)?.[1];
 if (!messagePattern) throw new Error('Weibo message timeline URL matcher missing');
 const messageRegex = new RegExp(messagePattern);
@@ -78,6 +82,7 @@ const mitm = plugin.match(/^hostname\s*=.*$/mi)?.[0] || '';
 for (const host of ['api.weibo.cn','mapi.weibo.cn','api.weibo.com','mapi.weibo.com']) {
   if (!mitm.includes(host)) throw new Error('Weibo MITM host missing: ' + host);
 }
+
 const messageScript = fs.readFileSync('scripts/weibo_message_ads.js', 'utf8');
 const runMessageFilter = body => {
   let result;

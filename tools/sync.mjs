@@ -190,32 +190,41 @@ function patchYangJiBaoPlugin(plugin) {
 
 
 function patchWeiboMessageTimeline(plugin) {
-  // Match MoYu's original WeiboAds.conf: run the full Weibo JSON cleaner on
-  // the Messages > Activity timeline endpoint, not a simplified ad-marker filter.
+  // The custom switch controls only the additional Messages > Activity filter.
+  // With it off, the plugin behaves exactly like the mirrored original MoYu plugin.
+  const parameter = 'custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息页动态中的广告和荐读；关闭则保持墨鱼原版行为';
+  if (!/^\[Argument\]$/mi.test(plugin)) {
+    const firstSection = plugin.search(/^\[/m);
+    if (firstSection < 0) throw new Error('Weibo plugin has no section to insert Argument before');
+    plugin = plugin.slice(0, firstSection) + '[Argument]\n' + parameter + '\n\n' + plugin.slice(firstSection);
+  } else if (!/^\s*custom\s*=/mi.test(plugin)) {
+    plugin = plugin.replace(/^\[Argument\]\s*$/mi, '[Argument]\n' + parameter);
+  }
   const pattern = '^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$)';
-  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads';
-  const lines = plugin.split('\\n');
+  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
+  const lines = plugin.split('\n');
   const existing = lines.findIndex(line => line.includes('tag=weibo_message_ads'));
   if (existing >= 0) lines[existing] = rule;
   else {
-    const mitmIndex = lines.findIndex(line => /^\\[MITM\\]$/i.test(line.trim()));
+    const mitmIndex = lines.findIndex(line => /^\[MITM\]$/i.test(line.trim()));
     if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline cleaner');
     lines.splice(mitmIndex, 0,
-      '# 消息页“动态”信息流：复用墨鱼完整 weibo_json.js 清理逻辑',
+      '# 自定义功能：开启时复用墨鱼完整 weibo_json.js 净化消息动态广告与荐读',
       rule,
       '');
   }
-  plugin = lines.join('\\n');
-  const mitmLine = plugin.match(/^hostname\\s*=.*$/mi)?.[0];
+  plugin = lines.join('\n');
+  const mitmLine = plugin.match(/^hostname\s*=.*$/mi)?.[0];
   if (!mitmLine) throw new Error('Weibo MITM hostname list missing');
-  const hostnames = mitmLine.replace(/^hostname\\s*=\\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
+  const hostnames = mitmLine.replace(/^hostname\s*=\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
   for (const host of ['mapi.weibo.cn', 'api.weibo.com', 'mapi.weibo.com']) {
     if (!hostnames.includes(host)) hostnames.push(host);
   }
   plugin = plugin.replace(mitmLine, 'hostname = ' + hostnames.join(', '));
-  if (!plugin.includes('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL) ||
-      !plugin.includes('/statuses/(?:unread_)?friends(?:/|_)timeline')) {
-    throw new Error('Weibo message timeline full cleaner was not installed');
+  if (!plugin.includes(parameter) ||
+      !plugin.includes('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL) ||
+      !plugin.includes('tag=weibo_message_ads, enable={custom}')) {
+    throw new Error('Weibo custom switch or conditional timeline cleaner was not installed');
   }
   return plugin;
 }
