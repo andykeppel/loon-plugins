@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-12T20:04:28.686Z",
+  "checkedAt": "2026-11-14T06:40:10.306Z",
   "converter": "Script-Hub-Org/Script-Hub",
   "parserCommit": "bc1b8b05138adead482d87b284c58a34d8470503",
   "plugins": {
@@ -21,8 +21,8 @@
     },
     "WeiboEnhanced.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
-      "sourceSha256": "904a1e60e07225f875853bed2005bbd781c443916dca05ce834374ee9def7eab",
-      "pluginSha256": "ea724755e14cbb98a3cdbede388ec0d7151c2c96e91d2a5a8cc253a6746b30b5",
+      "sourceSha256": "c01238dcce45cfdfaaa47d49a3650665a7560202423d12633469f70fa18aae49",
+      "pluginSha256": "32d7fc7860e1b447f50448a5a46a09abd03f2111decd2751c48843556f34bac7",
       "remoteScriptUrls": [
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js"
       ],
@@ -40,8 +40,57 @@
       "sourceIndicators": [],
       "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee.",
       "originalScript": "https://ddgksf2013.top/scripts/weibo_json.js",
-      "originalScriptSha256": "f40387dfd8bd70dc4477b8347823254a5eccf8cf9792c65fc35cef9140f00ca3",
-      "mirroredScript": "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js"
+      "originalScriptSha256": "192a89649dfcd10c976c3dc77476a0c964e803ad07ca7a11fe81a7218da2ee64",
+      "mirroredScript": "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
+      "localPatches": []
+    },
+    "WeiboCombined.plugin": {
+      "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
+      "sourceSha256": "c01238dcce45cfdfaaa47d49a3650665a7560202423d12633469f70fa18aae49",
+      "pluginSha256": "e1b90a841b17a012dcc34341525aec5025bf34cde664aa2996259e1745cf95c3",
+      "remoteScriptUrls": [
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js"
+      ],
+      "hostnames": [
+        "hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com, mapi.weibo.cn, api.weibo.com, mapi.weibo.com"
+      ],
+      "referencedUrls": [
+        "https://github.com/ddgksf2013",
+        "https://apps.apple.com/cn/app/id350962117",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png?v=official-20261110",
+        "https://api\\.weibo\\.cn/__qx_weibo_settings__/(?:api/config)?(?=[?#]|$",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
+        "https://api\\.weibo\\.cn/__qx_weibo_settings__/api/(?:save|reset)(?=[?#]|$",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js"
+      ],
+      "sourceIndicators": [],
+      "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee."
+    },
+    "WeiboAds.plugin": {
+      "source": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/WeiboAds.conf",
+      "sourceSha256": "9cc47e68231ae05324f50eea108e0f1e5175fa2cfeeb6c8bae241db1556b038a",
+      "pluginSha256": "b61df49334563bea85b48b18f141a7c1e7e6e93cadaf81064a926833bd24fde6",
+      "remoteScriptUrls": [
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_ads_original.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_info.json",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_topic.json"
+      ],
+      "hostnames": [
+        "hostname = api.weibo.*, *.api.weibo.*, mapi.weibo.*, *.uve.weibo.com, new.vip.weibo.cn, boot.biz.weibo.com"
+      ],
+      "referencedUrls": [
+        "https://github.com/ddgksf2013",
+        "https://apps.apple.com/cn/app/id350962117",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png?v=official-20261110",
+        "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_ads_original.js",
+        "https://api.weibo.cn/2/!/client/light_skin",
+        "https://new.vip.weibo.cn/littleskin/preview",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_info.json",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_topic.json"
+      ],
+      "sourceIndicators": [],
+      "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee."
     }
   }
 }

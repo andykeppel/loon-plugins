@@ -1,5 +1,5 @@
 #!name=微博助手合并版
-#!desc=墨鱼助手与可选自定义消息动态过滤（历史合并版）
+#!desc=全面自定义
 #!author=ddgksf2013
 #!homepage=https://github.com/ddgksf2013
 #!openUrl=https://apps.apple.com/cn/app/id350962117
@@ -7,14 +7,14 @@
 #!tag=ddgksf2013
 
 [Argument]
-custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息页动态中的广告和荐读；关闭则保持墨鱼原版行为
+custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息动态广告和荐读
 
 [Script]
 http-request ^https://api\.weibo\.cn/__qx_weibo_settings__/(?:api/config)?(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, timeout=60, tag=weibo_json
 
 http-request ^https://api\.weibo\.cn/__qx_weibo_settings__/api/(?:save|reset)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
-http-response ^https?://api\.weibo\.cn(?:/2/statuses/container_timeline_hot|/2/statuses/container_positive|/2/guest/container_timeline_hot|/2/statuses/container_timeline_unread|/2/statuses/container_timeline|/2/live/media_homelist|/2/remind/hometab_dot|/2/remind/unread_count|/2/statuses/container_detail|/2/statuses/container_detail_comment|/2/comments/build_comments|/2/search/finder|/2/search/container_timeline|/2/search/container_discover|/2/!/was/finder/searchbarchange|/2/cardlist|/2/flowpage|/2/searchall|/2/profile/me|/2/profile/container_timeline|/2/video/flow_stream|/2/video/flow_stream_cache|/2/push/daily|/2/push/active|/2/guest/push_active|/2/groups/allgroups/v2|/2/client/abserver_list|/2/checkin/show|/2/video/remind_info|/2/video/home_channels)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
+http-response ^https?://api\.weibo\.cn(?:/2/statuses/container_timeline_hot|/2/statuses/container_positive|/2/guest/container_timeline_hot|/2/statuses/container_timeline_unread|/2/statuses/container_timeline|/2/live/media_homelist|/2/remind/hometab_dot|/2/remind/unread_count|/2/statuses/container_detail|/2/statuses/container_detail_comment|/2/comments/build_comments|/2/search/finder|/2/search/container_timeline|/2/search/container_discover|/2/!/was/finder/searchbarchange|/2/cardlist|/2/flowpage|/2/searchall|/2/profile/me|/2/profile/container_timeline|/2/video/flow_stream|/2/video/flow_stream_cache|/2/push/daily|/2/push/active|/2/push/info|/2/guest/push_active|/2/groups/allgroups/v2|/2/client/abserver_list|/2/checkin/show|/2/video/remind_info|/2/video/home_channels)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
 http-response ^https?://bootpreload\.uve\.weibo\.com(?:/v2/ad/preload)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
@@ -22,8 +22,8 @@ http-response ^https?://bootrealtime\.uve\.weibo\.com(?:/v3/ad/realtime)(?=[?#]|
 
 http-response ^https?://wbapp\.uve\.weibo\.com(?:/wbapplua/wbpullad\.lua)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
-# 自定义功能：仅过滤消息 → 动态 notice 响应中已确认的推广条目；其他接口保持墨鱼原版行为
-http-response ^https?://api\.weibo\.cn/2/messageflow/notice(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}
+# 自定义功能：独立消息动态过滤
+http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}
 
 [MITM]
 hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com, mapi.weibo.cn, api.weibo.com, mapi.weibo.com
