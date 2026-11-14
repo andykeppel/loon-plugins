@@ -22,8 +22,8 @@ http-response ^https?://bootrealtime\.uve\.weibo\.com(?:/v3/ad/realtime)(?=[?#]|
 
 http-response ^https?://wbapp\.uve\.weibo\.com(?:/wbapplua/wbpullad\.lua)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
-# 自定义功能：开启时复用墨鱼完整 weibo_json.js 净化消息动态广告与荐读
-http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}
+# 自定义功能：开启时使用独立脚本过滤消息动态中的广告与荐读，不改变墨鱼原版脚本
+http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}
 
 [MITM]
 hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com, mapi.weibo.cn, api.weibo.com, mapi.weibo.com

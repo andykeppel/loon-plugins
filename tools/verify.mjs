@@ -66,7 +66,7 @@ if (!/^custom\s*=\s*switch,false,type=boolean,tag=自定义功能,/m.test(argume
 }
 const messageRule = plugin.split('\n').find(line => line.includes('tag=weibo_message_ads'));
 if (!messageRule) throw new Error('Weibo message timeline ad rule missing');
-if (!messageRule.includes('scripts/weibo_json.js')) throw new Error('Message timeline must reuse the full MoYu Weibo cleaner');
+if (!messageRule.includes('scripts/weibo_activity_clean.js')) throw new Error('Message timeline must use the independent cleaner');
 if (!messageRule.includes('enable={custom}')) throw new Error('Message timeline cleaner is not controlled by the custom switch');
 const messagePattern = messageRule.match(/^http-response\s+(.+?)\s+script-path=/)?.[1];
 if (!messagePattern) throw new Error('Weibo message timeline URL matcher missing');
@@ -83,6 +83,36 @@ for (const host of ['api.weibo.cn','mapi.weibo.cn','api.weibo.com','mapi.weibo.c
   if (!mitm.includes(host)) throw new Error('Weibo MITM host missing: ' + host);
 }
 
+
+const customCleaner = fs.readFileSync('scripts/weibo_activity_clean.js', 'utf8');
+function testActivity(input) {
+  let response;
+  vm.runInNewContext(customCleaner, {
+    $response: {body: JSON.stringify(input)},
+    $done(result) { response = result; }
+  }, {timeout: 2000});
+  return response.body ? JSON.parse(response.body) : input;
+}
+const sampleActivity = {data: {statuses: [
+  {id: 1, mblogtypename: '广告'},
+  {id: 2, mblogtypename: '荐读'},
+  {id: 3, mblogtypename: '热推'},
+  {id: 4, text: '正常关注用户微博'},
+  {id: 5, mblog: {content_auth_info: {content_auth_title: '广告'}}}
+], cards: [
+  {id: 6, card_group: [{id: 7, mblogtypename: '荐读'}]},
+  {id: 8, mblog: {text: '普通动态'}}
+], advertises: [{id: 9}]}};
+const resultActivity = testActivity(sampleActivity);
+if (JSON.stringify(resultActivity.data.statuses.map(x => x.id)) !== '[4]' ||
+    JSON.stringify(resultActivity.data.cards.map(x => x.id)) !== '[8]' ||
+    Object.prototype.hasOwnProperty.call(resultActivity.data, 'advertises')) {
+  throw new Error('Activity cleaner failed ad/recommendation test');
+}
+const normalActivity = {data: {statuses: [{id: 1, text: '普通微博'}]}};
+if (JSON.stringify(testActivity(normalActivity)) !== JSON.stringify(normalActivity)) {
+  throw new Error('Activity cleaner changed an ordinary timeline');
+}
 
 const source = fs.readFileSync('scripts/weibo_json.js', 'utf8');
 if (source.length < 30000) throw new Error('Weibo script is unexpectedly small');
