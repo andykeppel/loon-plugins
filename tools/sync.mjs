@@ -190,6 +190,8 @@ function patchYangJiBaoPlugin(plugin) {
 
 
 function patchWeiboMessageTimeline(plugin) {
+  plugin = plugin.replace('#!name=微博助手功能增强', '#!name=微博助手·完整净化');
+  plugin = plugin.replace('#!desc=全面自定义', '#!desc=墨鱼原版助手 + 可选消息动态广告净化');
   // The custom switch controls only the additional Messages > Activity filter.
   // With it off, the plugin behaves exactly like the mirrored original MoYu plugin.
   const parameter = 'custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息页动态中的广告和荐读；关闭则保持墨鱼原版行为';
