@@ -60,6 +60,41 @@ if (occurrences < 3 || plugin.includes('script-path=https://ddgksf2013.top/')) {
   throw new Error('Weibo script URLs not properly self-hosted: ' + occurrences);
 }
 
+const messageRule = plugin.split('\n').find(line => line.includes('weibo_message_ads.js'));
+if (!messageRule) throw new Error('Weibo message timeline ad rule missing');
+const messagePattern = messageRule.match(/^http-response\s+(.+?)\s+script-path=/)?.[1];
+if (!messagePattern) throw new Error('Weibo message timeline URL matcher missing');
+const messageRegex = new RegExp(messagePattern);
+for (const url of [
+  'https://api.weibo.cn/2/statuses/friends/timeline?since_id=1',
+  'https://mapi.weibo.cn/2/statuses/unread_friends_timeline?since_id=1',
+  'https://api.weibo.com/2/statuses/friends_timeline',
+  'https://mapi.weibo.com/2/statuses/unread_friends/timeline'
+]) if (!messageRegex.test(url)) throw new Error('Weibo message timeline matcher missed: ' + url);
+if (messageRegex.test('https://example.com/2/statuses/friends/timeline')) throw new Error('Weibo message matcher is too broad');
+const mitm = plugin.match(/^hostname\s*=.*$/mi)?.[0] || '';
+for (const host of ['api.weibo.cn','mapi.weibo.cn','api.weibo.com','mapi.weibo.com']) {
+  if (!mitm.includes(host)) throw new Error('Weibo MITM host missing: ' + host);
+}
+const messageScript = fs.readFileSync('scripts/weibo_message_ads.js', 'utf8');
+const runMessageFilter = body => {
+  let result;
+  vm.runInNewContext(messageScript, {$response: {body}, $done(value) { result = value; }}, {timeout: 1000});
+  return result;
+};
+const sample = {statuses: [
+  {id:'ad-type',mblogtypename:'广告'},
+  {id:'hot-type',mblogtypename:'热推'},
+  {id:'ad-promotion',promotion:{type:'ad'}},
+  {id:'ad-actionlog',page_info:{actionlog:{source:'ad'}}},
+  {id:'ad-auth',content_auth_info:{content_auth_title:'广告'}},
+  {id:'normal',text:'正常微博'}
+]};
+const filtered = JSON.parse(runMessageFilter(JSON.stringify(sample)).body);
+if (filtered.statuses.length !== 1 || filtered.statuses[0].id !== 'normal') throw new Error('Weibo ad filter failed');
+const nested = JSON.parse(runMessageFilter(JSON.stringify({data:sample})).body);
+if (nested.data.statuses.length !== 1 || nested.data.statuses[0].id !== 'normal') throw new Error('Nested Weibo ad filter failed');
+
 const source = fs.readFileSync('scripts/weibo_json.js', 'utf8');
 if (source.length < 30000) throw new Error('Weibo script is unexpectedly small');
 let output;

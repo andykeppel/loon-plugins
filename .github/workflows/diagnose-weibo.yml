@@ -8,6 +8,7 @@ on:
       - 'tools/verify.mjs'
       - 'YangJiBao.plugin'
       - 'WeiboEnhanced.plugin'
+      - 'scripts/weibo_message_ads.js'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +25,7 @@ jobs:
         with:
           node-version: '20'
       - name: Check JavaScript syntax
-        run: node --check tools/sync.mjs && node --check scripts/weibo_json.js && node --check tools/verify.mjs
+        run: node --check tools/sync.mjs && node --check scripts/weibo_json.js && node --check scripts/weibo_message_ads.js && node --check tools/verify.mjs
       - name: Verify app rules and Weibo settings
         run: node tools/verify.mjs
       - name: Install conversion dependencies
@@ -37,4 +38,4 @@ jobs:
       - name: Verify generated plugins and settings
         run: node tools/verify.mjs
       - name: Ensure generated plugins match published ones
-        run: git diff --exit-code -- YangJiBao.plugin WeiboEnhanced.plugin scripts/weibo_json.js
+        run: git diff --exit-code -- YangJiBao.plugin WeiboEnhanced.plugin scripts/weibo_json.js scripts/weibo_message_ads.js

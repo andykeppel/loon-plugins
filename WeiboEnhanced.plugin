@@ -19,5 +19,8 @@ http-response ^https?://bootrealtime\.uve\.weibo\.com(?:/v3/ad/realtime)(?=[?#]|
 
 http-response ^https?://wbapp\.uve\.weibo\.com(?:/wbapplua/wbpullad\.lua)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
+# 消息页“动态”信息流：仅过滤明确标记为广告/热推的微博
+http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_message_ads.js, requires-body=true, timeout=20, tag=weibo_message_ads
+
 [MITM]
-hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com
+hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com, mapi.weibo.cn, api.weibo.com, mapi.weibo.com

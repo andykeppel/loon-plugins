@@ -7,7 +7,7 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 | Plugin | Original author | Raw URL |
 | --- | --- | --- |
 | 养基宝去广告 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/YangJiBao.plugin |
-| 微博助手功能增强 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/WeiboEnhanced.plugin |
+- **微博助手**: its original author script is mirrored as `scripts/weibo_json.js` and serves a settings page. A local companion `scripts/weibo_message_ads.js` also filters explicitly marked ads from the Messages → Activity timeline API (`/statuses/(unread_)?friends(/|_)timeline`), based on MoYu's [WeiboAds.conf](https://github.com/ddgksf2013/Rewrite/blob/master/AdBlock/WeiboAds.conf). The sync generator preserves this local patch. If the app's assistant panel cannot open, check Loon MITM and other script conflicts.
 | 极简汇率 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/JiJianHuiLv.plugin |
 | 美团去广告 | ZenmoFeiShi (TG@ZenMoFiShi) | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/MeiTuan.plugin |
 | Localdevvpn 本机回环 | 本仓库维护（参考 Loon 官方文档） | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/Localdevvpn.plugin |
