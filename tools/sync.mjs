@@ -190,25 +190,32 @@ function patchYangJiBaoPlugin(plugin) {
 
 
 function patchWeiboMessageTimeline(plugin) {
+  // Match MoYu's original WeiboAds.conf: run the full Weibo JSON cleaner on
+  // the Messages > Activity timeline endpoint, not a simplified ad-marker filter.
   const pattern = '^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$)';
-  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_MESSAGE_ADS_SCRIPT_LOCAL + ', requires-body=true, timeout=20, tag=weibo_message_ads';
-  if (!plugin.split('\n').some(line => line.includes('tag=weibo_message_ads'))) {
-    const mitmIndex = plugin.search(/^\[MITM\]/mi);
-    if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline ad filter');
-    plugin = plugin.slice(0, mitmIndex) +
-      '# 消息页“动态”信息流：仅过滤明确标记为广告/热推的微博\n' + rule + '\n\n' +
-      plugin.slice(mitmIndex);
+  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads';
+  const lines = plugin.split('\\n');
+  const existing = lines.findIndex(line => line.includes('tag=weibo_message_ads'));
+  if (existing >= 0) lines[existing] = rule;
+  else {
+    const mitmIndex = lines.findIndex(line => /^\\[MITM\\]$/i.test(line.trim()));
+    if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline cleaner');
+    lines.splice(mitmIndex, 0,
+      '# 消息页“动态”信息流：复用墨鱼完整 weibo_json.js 清理逻辑',
+      rule,
+      '');
   }
-  const mitmLine = plugin.match(/^hostname\s*=.*$/mi)?.[0];
+  plugin = lines.join('\\n');
+  const mitmLine = plugin.match(/^hostname\\s*=.*$/mi)?.[0];
   if (!mitmLine) throw new Error('Weibo MITM hostname list missing');
-  const hostnames = mitmLine.replace(/^hostname\s*=\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
+  const hostnames = mitmLine.replace(/^hostname\\s*=\\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
   for (const host of ['mapi.weibo.cn', 'api.weibo.com', 'mapi.weibo.com']) {
     if (!hostnames.includes(host)) hostnames.push(host);
   }
   plugin = plugin.replace(mitmLine, 'hostname = ' + hostnames.join(', '));
-  if (!plugin.includes('script-path=' + BASE + '/' + WEIBO_MESSAGE_ADS_SCRIPT_LOCAL) ||
+  if (!plugin.includes('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL) ||
       !plugin.includes('/statuses/(?:unread_)?friends(?:/|_)timeline')) {
-    throw new Error('Weibo message timeline ad filter was not installed');
+    throw new Error('Weibo message timeline full cleaner was not installed');
   }
   return plugin;
 }

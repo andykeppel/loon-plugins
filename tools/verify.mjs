@@ -60,8 +60,10 @@ if (occurrences < 3 || plugin.includes('script-path=https://ddgksf2013.top/')) {
   throw new Error('Weibo script URLs not properly self-hosted: ' + occurrences);
 }
 
-const messageRule = plugin.split('\n').find(line => line.includes('weibo_message_ads.js'));
+const messageRule = plugin.split('\n').find(line => line.includes('tag=weibo_message_ads'));
 if (!messageRule) throw new Error('Weibo message timeline ad rule missing');
+if (!messageRule.includes('scripts/weibo_json.js')) throw new Error('Message timeline must reuse the full MoYu Weibo cleaner');
+if (messageRule.includes('weibo_message_ads.js')) throw new Error('Legacy simplified message filter must not be used');
 const messagePattern = messageRule.match(/^http-response\s+(.+?)\s+script-path=/)?.[1];
 if (!messagePattern) throw new Error('Weibo message timeline URL matcher missing');
 const messageRegex = new RegExp(messagePattern);
