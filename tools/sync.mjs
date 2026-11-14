@@ -18,7 +18,6 @@ const PARSER_URL = `https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/
 const STATE_PATH = '.last-sync.json';
 const WEIBO_SCRIPT_SOURCE = 'https://ddgksf2013.top/scripts/weibo_json.js';
 const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
-const WEIBO_ACTIVITY_SCRIPT_LOCAL = 'scripts/weibo_activity_clean.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
@@ -47,6 +46,16 @@ const specs = [
     icon: 'WeiboEnhanced.png',
     source: 'https://ddgksf2013.top/rewrite/WeiboEnhanced.conf',
     nameArg: '微博助手功能增强@ddgksf2013+全面自定义',
+    category: 'ddgksf2013',
+  },
+  {
+    filename: 'WeiboAds.plugin',
+    displayName: '微博去广告',
+    appStoreUrl: 'https://apps.apple.com/cn/app/id350962117',
+    outputName: 'WeiboAds.sgmodule',
+    icon: 'WeiboEnhanced.png',
+    source: 'https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/WeiboAds.conf',
+    nameArg: '微博去广告@ddgksf2013',
     category: 'ddgksf2013',
   },
 ];
@@ -189,47 +198,6 @@ function patchYangJiBaoPlugin(plugin) {
 }
 
 
-function patchWeiboMessageTimeline(plugin) {
-  plugin = plugin.replace('#!name=微博助手功能增强', '#!name=微博助手·完整净化');
-  plugin = plugin.replace('#!desc=全面自定义', '#!desc=墨鱼原版助手 + 可选消息动态广告净化');
-  // The custom switch controls only the additional Messages > Activity filter.
-  // With it off, the plugin behaves exactly like the mirrored original MoYu plugin.
-  const parameter = 'custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息页动态中的广告和荐读；关闭则保持墨鱼原版行为';
-  if (!/^\[Argument\]$/mi.test(plugin)) {
-    const firstSection = plugin.search(/^\[/m);
-    if (firstSection < 0) throw new Error('Weibo plugin has no section to insert Argument before');
-    plugin = plugin.slice(0, firstSection) + '[Argument]\n' + parameter + '\n\n' + plugin.slice(firstSection);
-  } else if (!/^\s*custom\s*=/mi.test(plugin)) {
-    plugin = plugin.replace(/^\[Argument\]\s*$/mi, '[Argument]\n' + parameter);
-  }
-  const pattern = '^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$)';
-  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_ACTIVITY_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
-  const lines = plugin.split('\n');
-  const existing = lines.findIndex(line => line.includes('tag=weibo_message_ads'));
-  if (existing >= 0) lines[existing] = rule;
-  else {
-    const mitmIndex = lines.findIndex(line => /^\[MITM\]$/i.test(line.trim()));
-    if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline cleaner');
-    lines.splice(mitmIndex, 0,
-      '# 自定义功能：开启时使用独立脚本净化消息动态广告与荐读',
-      rule,
-      '');
-  }
-  plugin = lines.join('\n');
-  const mitmLine = plugin.match(/^hostname\s*=.*$/mi)?.[0];
-  if (!mitmLine) throw new Error('Weibo MITM hostname list missing');
-  const hostnames = mitmLine.replace(/^hostname\s*=\s*/i, '').split(',').map(x => x.trim()).filter(Boolean);
-  for (const host of ['mapi.weibo.cn', 'api.weibo.com', 'mapi.weibo.com']) {
-    if (!hostnames.includes(host)) hostnames.push(host);
-  }
-  plugin = plugin.replace(mitmLine, 'hostname = ' + hostnames.join(', '));
-  if (!plugin.includes(parameter) ||
-      !plugin.includes('script-path=' + BASE + '/' + WEIBO_ACTIVITY_SCRIPT_LOCAL) ||
-      !plugin.includes('tag=weibo_message_ads, enable={custom}')) {
-    throw new Error('Weibo custom switch or conditional timeline cleaner was not installed');
-  }
-  return plugin;
-}
 
 function audit(spec, source, plugin) {
   const urls = [...new Set((plugin.match(/https?:\/\/[^\s,;"'<>]+/g) || []).map(url => url.replace(/[)\]]$/, '')))];
@@ -249,7 +217,7 @@ function audit(spec, source, plugin) {
 }
 
 try {
-  console.log('Fetching and validating both original sources...');
+  console.log('Fetching and validating original sources...');
   const sourceBodies = new Map();
   for (const spec of specs) {
     const body = await getText(spec.source);
@@ -287,7 +255,7 @@ try {
       const occurrences = plugin.split(originalPath).length - 1;
       if (occurrences < 3) throw new Error('Expected Weibo script rules are missing; refusing incomplete conversion');
       plugin = plugin.split(originalPath).join('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL);
-      plugin = patchWeiboMessageTimeline(plugin);
+
     }
     generated.set(spec.filename, plugin);
     auditReport.plugins[spec.filename] = audit(spec, sourceBodies.get(spec.filename), plugin);
@@ -295,7 +263,7 @@ try {
       auditReport.plugins[spec.filename].originalScript = WEIBO_SCRIPT_SOURCE;
       auditReport.plugins[spec.filename].originalScriptSha256 = sha256(weiboScript);
       auditReport.plugins[spec.filename].mirroredScript = BASE + '/' + WEIBO_SCRIPT_LOCAL;
-      auditReport.plugins[spec.filename].localPatches = ['Messages > Activity feed ad filtering for /statuses/(unread_)?friends(/|_)timeline'];
+      auditReport.plugins[spec.filename].localPatches = [];
     }
     console.log(`Converted and validated: ${spec.filename} (${Buffer.byteLength(plugin)} bytes)`);
   }
@@ -310,7 +278,7 @@ try {
     last_success: now.toISOString(),
     sources: Object.fromEntries(specs.map(spec => [spec.filename, sha256(sourceBodies.get(spec.filename))])),
   }, null, 2) + '\n');
-  console.log('SUCCESS: both plugins and mirrored Weibo assistant script are ready; Loon display metadata updated.');
+  console.log('SUCCESS: original Weibo assistant and separate Weibo Ads plugin generated.');
 } catch (error) {
   console.error(`SYNC FAILED; existing published plugins were not overwritten.\n${error.stack || error}`);
   process.exitCode = 1;

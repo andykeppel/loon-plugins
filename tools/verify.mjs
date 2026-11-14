@@ -3,7 +3,8 @@ import vm from 'node:vm';
 
 for (const [filename, name, appId] of [
   ['YangJiBao.plugin', '养基宝去广告', 'id1597754877'],
-  ['WeiboEnhanced.plugin', '微博助手·完整净化', 'id350962117']
+  ['WeiboEnhanced.plugin', '微博助手功能增强', 'id350962117'],
+  ['WeiboAds.plugin', '微博去广告', 'id350962117']
 ]) {
   const content = fs.readFileSync(filename, 'utf8');
   const checks = [
@@ -60,59 +61,10 @@ if (occurrences < 3 || plugin.includes('script-path=https://ddgksf2013.top/')) {
   throw new Error('Weibo script URLs not properly self-hosted: ' + occurrences);
 }
 
-const argumentBlock = plugin.match(/^\[Argument\]\s*\n([\s\S]*?)(?=^\[)/m)?.[1] || '';
-if (!/^custom\s*=\s*switch,false,type=boolean,tag=自定义功能,/m.test(argumentBlock)) {
-  throw new Error('Weibo custom feature switch missing or default is not off');
-}
-const messageRule = plugin.split('\n').find(line => line.includes('tag=weibo_message_ads'));
-if (!messageRule) throw new Error('Weibo message timeline ad rule missing');
-if (!messageRule.includes('scripts/weibo_activity_clean.js')) throw new Error('Message timeline must use the independent cleaner');
-if (!messageRule.includes('enable={custom}')) throw new Error('Message timeline cleaner is not controlled by the custom switch');
-const messagePattern = messageRule.match(/^http-response\s+(.+?)\s+script-path=/)?.[1];
-if (!messagePattern) throw new Error('Weibo message timeline URL matcher missing');
-const messageRegex = new RegExp(messagePattern);
-for (const url of [
-  'https://api.weibo.cn/2/statuses/friends/timeline?since_id=1',
-  'https://mapi.weibo.cn/2/statuses/unread_friends_timeline?since_id=1',
-  'https://api.weibo.com/2/statuses/friends_timeline',
-  'https://mapi.weibo.com/2/statuses/unread_friends/timeline'
-]) if (!messageRegex.test(url)) throw new Error('Weibo message timeline matcher missed: ' + url);
-if (messageRegex.test('https://example.com/2/statuses/friends/timeline')) throw new Error('Weibo message matcher is too broad');
-const mitm = plugin.match(/^hostname\s*=.*$/mi)?.[0] || '';
-for (const host of ['api.weibo.cn','mapi.weibo.cn','api.weibo.com','mapi.weibo.com']) {
-  if (!mitm.includes(host)) throw new Error('Weibo MITM host missing: ' + host);
-}
-
-
-const customCleaner = fs.readFileSync('scripts/weibo_activity_clean.js', 'utf8');
-function testActivity(input) {
-  let response;
-  vm.runInNewContext(customCleaner, {
-    $response: {body: JSON.stringify(input)},
-    $done(result) { response = result; }
-  }, {timeout: 2000});
-  return response.body ? JSON.parse(response.body) : input;
-}
-const sampleActivity = {data: {statuses: [
-  {id: 1, mblogtypename: '广告'},
-  {id: 2, mblogtypename: '荐读'},
-  {id: 3, mblogtypename: '热推'},
-  {id: 4, text: '正常关注用户微博'},
-  {id: 5, mblog: {content_auth_info: {content_auth_title: '广告'}}}
-], cards: [
-  {id: 6, card_group: [{id: 7, mblogtypename: '荐读'}]},
-  {id: 8, mblog: {text: '普通动态'}}
-], advertises: [{id: 9}]}};
-const resultActivity = testActivity(sampleActivity);
-if (JSON.stringify(resultActivity.data.statuses.map(x => x.id)) !== '[4]' ||
-    JSON.stringify(resultActivity.data.cards.map(x => x.id)) !== '[8]' ||
-    Object.prototype.hasOwnProperty.call(resultActivity.data, 'advertises')) {
-  throw new Error('Activity cleaner failed ad/recommendation test');
-}
-const normalActivity = {data: {statuses: [{id: 1, text: '普通微博'}]}};
-if (JSON.stringify(testActivity(normalActivity)) !== JSON.stringify(normalActivity)) {
-  throw new Error('Activity cleaner changed an ordinary timeline');
-}
+if (plugin.includes('自定义功能') || plugin.includes('weibo_message_ads')) throw new Error('Original Weibo assistant still contains custom ad patch');
+const ads = fs.readFileSync('WeiboAds.plugin','utf8');
+if (!ads.includes('[Script]') || !ads.includes('[MITM]')) throw new Error('Separate Weibo ad plugin is incomplete');
+if (!ads.includes('friends')) throw new Error('Separate Weibo ad plugin is missing timeline coverage');
 
 const source = fs.readFileSync('scripts/weibo_json.js', 'utf8');
 if (source.length < 30000) throw new Error('Weibo script is unexpectedly small');
