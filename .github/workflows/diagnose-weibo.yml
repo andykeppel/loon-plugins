@@ -8,6 +8,7 @@ on:
       - 'tools/verify.mjs'
       - 'YangJiBao.plugin'
       - 'WeiboEnhanced.plugin'
+      - 'scripts/weibo_activity_clean.js'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +25,7 @@ jobs:
         with:
           node-version: '20'
       - name: Check JavaScript syntax
-        run: node --check tools/sync.mjs && node --check scripts/weibo_json.js && node --check tools/verify.mjs
+        run: node --check tools/sync.mjs && node --check scripts/weibo_json.js && node --check scripts/weibo_activity_clean.js && node --check tools/verify.mjs
       - name: Verify app rules and Weibo settings
         run: node tools/verify.mjs
       - name: Install conversion dependencies

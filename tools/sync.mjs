@@ -18,7 +18,7 @@ const PARSER_URL = `https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/
 const STATE_PATH = '.last-sync.json';
 const WEIBO_SCRIPT_SOURCE = 'https://ddgksf2013.top/scripts/weibo_json.js';
 const WEIBO_SCRIPT_LOCAL = 'scripts/weibo_json.js';
-const WEIBO_MESSAGE_ADS_SCRIPT_LOCAL = 'scripts/weibo_message_ads.js';
+const WEIBO_ACTIVITY_SCRIPT_LOCAL = 'scripts/weibo_activity_clean.js';
 const state = fs.existsSync(STATE_PATH) ? JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')) : {};
 const now = new Date();
 
@@ -203,7 +203,7 @@ function patchWeiboMessageTimeline(plugin) {
     plugin = plugin.replace(/^\[Argument\]\s*$/mi, '[Argument]\n' + parameter);
   }
   const pattern = '^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$)';
-  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
+  const rule = 'http-response ' + pattern + ' script-path=' + BASE + '/' + WEIBO_ACTIVITY_SCRIPT_LOCAL + ', requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
   const lines = plugin.split('\n');
   const existing = lines.findIndex(line => line.includes('tag=weibo_message_ads'));
   if (existing >= 0) lines[existing] = rule;
@@ -211,7 +211,7 @@ function patchWeiboMessageTimeline(plugin) {
     const mitmIndex = lines.findIndex(line => /^\[MITM\]$/i.test(line.trim()));
     if (mitmIndex < 0) throw new Error('Weibo MITM section missing; cannot add message timeline cleaner');
     lines.splice(mitmIndex, 0,
-      '# 自定义功能：开启时复用墨鱼完整 weibo_json.js 净化消息动态广告与荐读',
+      '# 自定义功能：开启时使用独立脚本净化消息动态广告与荐读',
       rule,
       '');
   }
@@ -224,7 +224,7 @@ function patchWeiboMessageTimeline(plugin) {
   }
   plugin = plugin.replace(mitmLine, 'hostname = ' + hostnames.join(', '));
   if (!plugin.includes(parameter) ||
-      !plugin.includes('script-path=' + BASE + '/' + WEIBO_SCRIPT_LOCAL) ||
+      !plugin.includes('script-path=' + BASE + '/' + WEIBO_ACTIVITY_SCRIPT_LOCAL) ||
       !plugin.includes('tag=weibo_message_ads, enable={custom}')) {
     throw new Error('Weibo custom switch or conditional timeline cleaner was not installed');
   }
