@@ -1,10 +1,13 @@
-#!name=微博助手功能增强
-#!desc=全面自定义
+#!name=微博助手·完整净化
+#!desc=墨鱼原版助手 + 可选消息动态广告净化
 #!author=ddgksf2013
 #!homepage=https://github.com/ddgksf2013
 #!openUrl=https://apps.apple.com/cn/app/id350962117
 #!icon=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/icons/WeiboEnhanced.png?v=official-20261110
 #!tag=ddgksf2013
+
+[Argument]
+custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息页动态中的广告和荐读；关闭则保持墨鱼原版行为
 
 [Script]
 http-request ^https://api\.weibo\.cn/__qx_weibo_settings__/(?:api/config)?(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, timeout=60, tag=weibo_json
@@ -19,8 +22,8 @@ http-response ^https?://bootrealtime\.uve\.weibo\.com(?:/v3/ad/realtime)(?=[?#]|
 
 http-response ^https?://wbapp\.uve\.weibo\.com(?:/wbapplua/wbpullad\.lua)(?=[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_json
 
-# 消息页“动态”信息流：仅过滤明确标记为广告/热推的微博
-http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_message_ads
+# 自定义功能：开启时复用墨鱼完整 weibo_json.js 净化消息动态广告与荐读
+http-response ^https?://m?api\.weibo\.c(?:n|om)/\d/statuses/(?:unread_)?friends(?:/|_)timeline(?:[?#]|$) script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}
 
 [MITM]
 hostname = api.weibo.cn, bootpreload.uve.weibo.com, bootrealtime.uve.weibo.com, wbapp.uve.weibo.com, mapi.weibo.cn, api.weibo.com, mapi.weibo.com

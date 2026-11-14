@@ -7,7 +7,7 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 | Plugin | Original author | Raw URL |
 | --- | --- | --- |
 | 养基宝去广告 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/YangJiBao.plugin |
-- **微博助手**: its original author script is mirrored as `scripts/weibo_json.js` and serves a settings page. A local companion `scripts/weibo_message_ads.js` also filters explicitly marked ads from the Messages → Activity timeline API (`/statuses/(unread_)?friends(/|_)timeline`), based on MoYu's [WeiboAds.conf](https://github.com/ddgksf2013/Rewrite/blob/master/AdBlock/WeiboAds.conf). The sync generator preserves this local patch. If the app's assistant panel cannot open, check Loon MITM and other script conflicts.
+- **微博助手·完整净化**: one combined plugin with the original MoYu settings page and a Loon `[Argument]` switch named `自定义功能`. The switch defaults to off; off preserves the original MoYu behavior, while on enables the extra Messages → Activity timeline cleaner by reusing the mirrored `scripts/weibo_json.js`.
 | 极简汇率 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/JiJianHuiLv.plugin |
 | 美团去广告 | ZenmoFeiShi (TG@ZenMoFiShi) | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/MeiTuan.plugin |
 | Localdevvpn 本机回环 | 本仓库维护（参考 Loon 官方文档） | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/Localdevvpn.plugin |
@@ -39,7 +39,7 @@ Each workflow keeps previously published files if downloading, converting or val
 ## Other plugin notes
 
 - **养基宝**: URL matching fixes for nested `unify_ad` endpoints are applied locally after Script Hub conversion.
-- **微博助手**: its original author script is mirrored as `scripts/weibo_json.js` and serves a settings page. If the app's assistant panel cannot open, check Loon MITM and other script conflicts.
+
 - **极简汇率**: mirrors the original script under `scripts/jijianhuilv.vip.js`.
 
 The GitHub repository and associated workflows are independent of Script Hub's iPhone front-end module. Source auditing is static, and upstream authors may change their code over time.
