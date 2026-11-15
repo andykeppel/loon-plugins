@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: meituan-plugin-sync
+  group: loon-all-plugin-sync
   cancel-in-progress: false
 
 jobs:
