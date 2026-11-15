@@ -1,12 +1,14 @@
-name: Sync Loon plugins from original author
+name: Sync all Loon plugins daily at 04:00 Beijing
 
 on:
+  # GitHub Actions cron uses UTC: 20:00 UTC = 04:00 next day Asia/Shanghai.
+  # All upstream-managed plugins run in one job to avoid competing git pushes.
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: Force an immediate upstream check
+        description: Force an upstream check outside the daily schedule
         required: false
         type: boolean
         default: true
@@ -15,7 +17,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: loon-plugin-sync
+  group: loon-all-plugin-sync
   cancel-in-progress: false
 
 jobs:
@@ -32,16 +34,61 @@ jobs:
           node-version: '20'
       - name: Install converter dependencies
         run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
-      - name: Fetch original sources and build Loon plugins
-        env:
-          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true && 'true' || 'false' }}
-        run: node tools/sync.mjs
-      - name: Commit successful sync
+      - name: Check synchronizer and verifier syntax
         run: |
+          for file in tools/sync.mjs tools/verify.mjs tools/sync-extra.mjs tools/verify-extra.mjs tools/sync-meituan.mjs tools/verify-meituan.mjs tools/sync-applet.mjs tools/verify-applet.mjs; do
+            node --check "$file"
+          done
+      - name: Fetch, verify and commit daily upstream mirrors
+        shell: bash
+        env:
+          # Scheduled checks always run, regardless of the prior success timestamp.
+          FORCE_SYNC: ${{ github.event_name == 'schedule' && 'true' || (inputs.force == true && 'true' || 'false') }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -u
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .last-sync.json YangJiBao.plugin WeiboEnhanced.plugin WeiboAds.plugin WeiboCombined.plugin reports/metadata.json scripts/weibo_json.js scripts/weibo_ads_original.js
+          failed=0
+
+          # Stage each plugin only after its conversion and tests pass.
+          # Failure of one source must not block other independent plugins.
+          run_one() {
+            local label="$1" build="$2" verify="$3"
+            shift 3
+            echo "::group::$label"
+            if node "$build" && node "$verify"; then
+              git add -- "$@"
+              echo "PASS: $label" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::error::Failed: $label; preserving its previous published files"
+              echo "FAIL: $label" >> "$GITHUB_STEP_SUMMARY"
+              failed=1
+            fi
+            echo "::endgroup::"
+          }
+
+          run_one "MoYu YangJiBao and Weibo" tools/sync.mjs tools/verify.mjs \
+            .last-sync.json YangJiBao.plugin WeiboEnhanced.plugin WeiboAds.plugin WeiboCombined.plugin \
+            reports/metadata.json scripts/weibo_json.js scripts/weibo_ads_original.js
+          run_one "MoYu Currency" tools/sync-extra.mjs tools/verify-extra.mjs \
+            .last-extra-sync.json JiJianHuiLv.plugin scripts/jijianhuilv.vip.js \
+            icons/JiJianHuiLv.png reports/extra-metadata.json
+          run_one "ZenmoFeiShi Meituan" tools/sync-meituan.mjs tools/verify-meituan.mjs \
+            .last-meituan-sync.json MeiTuan.plugin scripts/MeiTuan.js \
+            icons/MeiTuan.png reports/meituan-metadata.json
+          run_one "MoYu WeChat mini programs" tools/sync-applet.mjs tools/verify-applet.mjs \
+            .last-applet-sync.json WeChatApplet.plugin scripts/WeChatApplet.js \
+            scripts/ZhangShangGongJiao.js reports/applet-metadata.json
+
           if ! git diff --cached --quiet; then
-            git commit -m 'chore: sync Loon plugins from original sources'
+            git commit -m 'chore: sync verified Loon plugins (04:00 Beijing)'
             git push
+          else
+            echo 'No verified source changes to publish.'
+          fi
+
+          if [ "$failed" -ne 0 ]; then
+            echo 'One or more independent upstream syncs failed. Successful updates were committed.'
+            exit 1
           fi
