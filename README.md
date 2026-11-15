@@ -7,6 +7,7 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 | Plugin | Original author | Raw URL |
 | --- | --- | --- |
 | 养基宝去广告 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/YangJiBao.plugin |
+| 微信小程序去广告 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/WeChatApplet.plugin |
 - **微博助手·完整净化**: one combined plugin with the original MoYu settings page and a Loon `[Argument]` switch named `自定义功能`. The switch defaults to off; off preserves the original MoYu behavior, while on enables the extra Messages → Activity timeline cleaner by reusing the mirrored `scripts/weibo_json.js`.
 | 极简汇率 | ddgksf2013 | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/JiJianHuiLv.plugin |
 | 美团去广告 | ZenmoFeiShi (TG@ZenMoFiShi) | https://raw.githubusercontent.com/andykeppel/loon-plugins/main/MeiTuan.plugin |
@@ -18,13 +19,21 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 
 ## Automatic source checks and manual update
 
-Workflows wake every 6 hours and allow a manual **Run workflow** action with forced refresh. **All upstream-managed plugins** — YangJiBao, WeiboEnhanced, JiJianHuiLv (ddgksf2013) and Meituan (ZenmoFeiShi) — fetch upstream when at least 24 hours have elapsed since the last successful check (usually every 24–30 hours because of the 6-hour polling schedule). The independent Localdevvpn plugin has no upstream-sync job.
+**Unified upstream refresh:** GitHub Actions checks **every day at 04:00 Asia/Shanghai (20:00 UTC the previous day)**, without a rolling 24-hour cooldown. The single job handles YangJiBao, WeiboEnhanced, WeiboAds, WeiboCombined, JiJianHuiLv, Meituan and WeChatApplet sequentially to avoid concurrent pushes. Each independent plugin is staged only after conversion and verification succeeds. GitHub Actions scheduled jobs can occasionally start later than their cron time. This is GitHub's source mirroring schedule, **not an automatic on-device Loon subscription refresh**. The independent Localdevvpn plugin is not upstream-managed.
 
-- [同步养基宝与微博助手](https://github.com/andykeppel/loon-plugins/actions/workflows/sync.yml)
-- [同步极简汇率](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-extra.yml)
-- [同步美团（ZenmoFeiShi）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-meituan.yml)
+- [统一每日 04:00 同步（支持手动运行）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync.yml)
+- [单独手动同步极简汇率](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-extra.yml)
+- [单独手动同步美团（ZenmoFeiShi）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-meituan.yml)
 
 Each workflow keeps previously published files if downloading, converting or validating the new version fails. In Loon, refresh the installed plugin to retrieve the new GitHub version.
+
+## WeChat mini programs · MoYu
+
+- Original Quantumult X source: https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/Applet.conf
+- Standalone Loon plugin: `WeChatApplet.plugin` with three URL rewrites, two response scripts mirrored at `scripts/WeChatApplet.js` and `scripts/ZhangShangGongJiao.js`, and the original MITM host set (deduplicated).
+- The original Applet JavaScript used `$done(e)`, which has been adapted to the Loon-supported `$done({body:e})`; the source scripts otherwise preserve the original ad-cleaning behavior.
+- Original author notes that this plugin only covers certain mini programs **and cannot remove their five-second splash advertisements**. Broad MITM entries can overlap with other WeChat ad-blockers; avoid enabling conflicting plugins together.
+- Current icon uses Apple's official WeChat App Store artwork CDN; Loon App Store shortcut: https://apps.apple.com/cn/app/id414478124.
 
 ## Meituan · ZenmoFeiShi
 
