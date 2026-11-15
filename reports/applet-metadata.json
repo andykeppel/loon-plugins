@@ -1,0 +1,13 @@
+{
+  "lastCheck": "2026-11-15T23:39:48.106Z",
+  "source": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/Applet.conf",
+  "appletSource": "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/applet.js",
+  "busSource": "https://raw.githubusercontent.com/ddgksf2013/Scripts/master/zhangshanggongjiao.js",
+  "sourceSha256": "42afa7243c18445001216d3fa20ba3b7f48272cd60a7738f8222e23c37f038c5",
+  "pluginSha256": "d7d461d9fe77c841470641a859d61b46ba40cad3fb89de3a7cd800d86999906c",
+  "appletSha256": "d64f62157f7283b64bae12d9173decafb16969bbff0d30f7a3f261aded8547d4",
+  "busSha256": "0a2ebfbf41ed4b7dbd39f4aa50616ac42cd59d5eb0baa026fc1b98e7a4f5a8bb",
+  "rewriteCount": 3,
+  "scriptCount": 2,
+  "note": "Original QX response-body rewrite adapted to Loon; QX $done(e) adapted to $done({body:e})."
+}
