@@ -1,0 +1,26 @@
+#!name=微信小程序去广告
+#!desc=墨鱼原版：特定小程序去广告、隐藏内容净化；不含5秒开屏
+#!author=ddgksf2013
+#!homepage=https://github.com/ddgksf2013/Rewrite
+#!openUrl=https://apps.apple.com/cn/app/id414478124
+#!icon=https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/aa/4b/f3/aa4bf3ed-2e7b-f100-cf89-567db2bb53bb/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-0-85-220.png/512x512bb.jpg
+#!tag=ddgksf2013
+
+# Original source: https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/Applet.conf
+# Original response scripts mirrored in this repository.
+# 注意：仅适用于原作者列出的部分小程序，无法去除小程序5秒开屏广告。
+
+[Rewrite]
+# 便利蜂、顺丰广告屏蔽
+^https?:\/\/api\.blibee\.com\/cvsnotify-api\/cvs\/notify\/app\/banner\/v\d+$ - reject-200
+^https?:\/\/ucmp\.sf-express\.com\/proxy\/operation-platform\/info-flow-adver\/query$ - reject-200
+# 公众号文章广告字段替换（保留墨鱼原版语义）
+^(http|https):\/\/mp\.weixin\.qq\.com\/mp\/getappmsgad response-body-replace-regex advertisement ddgksf2013
+
+[Script]
+# 掌上公交与部分 WordPress 小程序
+http-response ^https?:\/\/wx\.mygolbs\.com\/WxBusServer\/ApiData\.do script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/ZhangShangGongJiao.js, requires-body=true, timeout=30, tag=掌上公交净化
+http-response ^(https?://)?([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}(:\d+)?/wp-json/[a-zA-Z0-9_-]+/(mp\/)?v\d/posts script-path=https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/WeChatApplet.js, requires-body=true, timeout=30, tag=微信小程序净化
+
+[MITM]
+hostname = api.blibee.com, ucmp.sf-express.com, www.bbkj.work, wx.wxqqurl.cn, wp3.lobdol.cn, awg.enmonster.com, mp.weixin.qq.com, wx.mygolbs.com, jabi.coding.net, api.bspapp.com, 3dd0be8a-54fe-43ff-a0e7-f670c4f20432.bspapp.com, *.tslt.xyz, g.syshhc.top, c.jxjt888.top, www.laoguikeji.cn, qj.bpojie.com, b.tslt.xyz, m.xgjyouhui.com, www.freeheikeji.cn, xcx.xianbaow.com, *.smkj33.top, *.ddly666.top, hkj178.com, a.jxjt888.top, lysl2020.com, www.i3zh.com, iosoi.cn, jt.jxjt888.top, gjsx.vip, d.syshhc.top, gz.gongzijx.com, tvapp.guilaile.cn, www.benbenfx.xyz, 4thdimension.top, tan.ipnas.ltd
