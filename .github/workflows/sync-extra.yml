@@ -1,11 +1,7 @@
+# Schedule consolidated into sync.yml (04:00 Asia/Shanghai). This workflow remains manual only.
 name: Sync Currency plugin
 
 on:
-  push:
-    paths:
-      - '.github/workflows/sync-extra.yml'
-  schedule:
-    - cron: '41 */6 * * *'
   workflow_dispatch:
     inputs:
       force:
