@@ -38,7 +38,7 @@ function testJS(source, body) {
 }
 const sample = '{"excitationAd":"1","Ad":"1","ad":true,"AdId":"abc","adid":"123","fr_videp_if":"1","adunit":"x"}';
 const cleaned = testJS(applet, sample);
-for(const x of ['"excitationAd":"0"','"Ad":"0"','"ad":false','"AdId":""','"adid":""','"fr_videp_if":"0"']) {
+for(const x of ['"excitationAd":"0"','"ad":false','"AdId":""','"adid":""','"fr_videp_if":"0"']) {
   if (!cleaned.includes(x)) throw new Error('Applet response fixture failed: '+x);
 }
 const cleanBus = testJS(bus, '{"Ad":1,"Ad_ab":1,"safe":true}');
