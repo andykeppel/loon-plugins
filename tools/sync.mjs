@@ -212,11 +212,38 @@ function patchYangJiBaoPlugin(plugin) {
 
 function patchWeiboCombined(plugin) {
   const argument = 'custom = switch,false,type=boolean,tag=自定义功能,desc=开启后额外净化消息动态广告和荐读';
-  plugin = plugin.replace(/^\[Script\]$/m, '[Argument]\n' + argument + '\n\n[Script]');
-  const rule = 'http-response ^https?://m?api\\.weibo\\.c(?:n|om)/\\d/statuses/(?:unread_)?friends(?:/|_)timeline script-path=' + BASE + '/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
-  plugin = plugin.replace(/^\[MITM\]$/m, '# 自定义功能：独立消息动态过滤\n' + rule + '\n\n[MITM]');
-  plugin = plugin.replace(/^(hostname\s*=\s*.*)$/mi, '$1, mapi.weibo.cn, api.weibo.com, mapi.weibo.com');
-  return plugin;
+  const argumentHeader = /^\[Argument\]\s*$/m;
+  const customArgument = /^custom\s*=.*$/mi;
+
+  if (customArgument.test(plugin)) {
+    plugin = plugin.replace(customArgument, argument);
+  } else if (argumentHeader.test(plugin)) {
+    plugin = plugin.replace(argumentHeader, '[Argument]\n' + argument);
+  } else {
+    if (!/^\[Script\]\s*$/m.test(plugin)) throw new Error('Weibo plugin has no [Script] section');
+    plugin = plugin.replace(/^\[Script\]\s*$/m, '[Argument]\n' + argument + '\n\n[Script]');
+  }
+
+  // Remove any previously generated activity-cleaner rule before adding the
+  // one endpoint whose response schema is handled by weibo_activity_clean.js.
+  plugin = plugin.replace(/^[ \t]*http-response[^\r\n]*scripts\/weibo_activity_clean\.js[^\r\n]*(?:\r?\n|$)/gm, '');
+
+  const rule = 'http-response ^https?://api\\.weibo\\.cn/2/messageflow/notice(?=[?#]|$) script-path='
+    + BASE + '/scripts/weibo_activity_clean.js, requires-body=true, timeout=60, tag=weibo_message_ads, enable={custom}';
+  if (!/^\[MITM\]\s*$/m.test(plugin)) throw new Error('Weibo plugin has no [MITM] section');
+  plugin = plugin.replace(/^\[MITM\]\s*$/m, '# 自定义功能：消息动态广告过滤（/2/messageflow/notice）\n' + rule + '\n\n[MITM]');
+
+  // Add required hosts once; repeated generation must not accumulate duplicates.
+  const requiredHosts = ['mapi.weibo.cn', 'api.weibo.com', 'mapi.weibo.com'];
+  let hostnameFound = false;
+  plugin = plugin.replace(/^(hostname\s*=\s*)(.*)$/mi, (line, prefix, value) => {
+    hostnameFound = true;
+    const hosts = value.split(',').map(host => host.trim()).filter(Boolean);
+    for (const host of requiredHosts) if (!hosts.includes(host)) hosts.push(host);
+    return prefix + hosts.join(', ');
+  });
+  if (!hostnameFound) throw new Error('Weibo plugin has no hostname entry');
+  return plugin.replace(/\n{3,}/g, '\n\n');
 }
 
 function audit(spec, source, plugin) {
@@ -259,6 +286,11 @@ try {
   const adsScript = await getText('https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weibo_json.js', {'User-Agent': 'Loon-Mirror'}, 1024 * 1024);
   if (adsScript.includes('createSettingsHandler') || adsScript.length < 8000) throw new Error('Original ad script is unexpected');
   const combinedCleaner = fs.readFileSync('scripts/weibo_activity_clean.js','utf8');
+  if (!combinedCleaner.includes('msg.type === 47') ||
+      !combinedCleaner.includes('msg.sub_type === 65') ||
+      !combinedCleaner.includes('msg.isrecommend === true')) {
+    throw new Error('Weibo activity cleaner no longer matches the verified promoted-message schema');
+  }
 
   console.log(`Fetching pinned official Script Hub parser: ${PARSER_COMMIT}`);
   let parser = await getText(PARSER_URL, {'User-Agent': 'UNIONFUSION-GitHub-Actions'}, 400 * 1024);

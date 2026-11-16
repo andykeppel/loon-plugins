@@ -92,3 +92,65 @@ if (originalAds.includes('createSettingsHandler')) throw new Error('Ads-only scr
 if (!adsPlugin.includes('scripts/weibo_ads_original.js') || adsPlugin.includes('scripts/weibo_json.js')) throw new Error('Ads plugin uses assistant script');
 if (!combinedPlugin.includes('tag=weibo_message_ads, enable={custom}') || !combinedPlugin.includes('tag=自定义功能')) throw new Error('Combined switch missing');
 if (fs.readFileSync('WeiboEnhanced.plugin','utf8').includes('tag=自定义功能')) throw new Error('Original assistant has custom switch');
+
+// The combined plugin must bind the message-activity cleaner to the endpoint
+// whose JSON response contains the messages[] collection.
+const activityRules = combinedPlugin.split('\n').filter(line => line.includes('scripts/weibo_activity_clean.js'));
+if (activityRules.length !== 1) throw new Error('Expected exactly one Weibo message-activity cleaner rule');
+const activityRule = activityRules[0];
+const activityMatch = activityRule.match(/^http-response\s+(\S+)\s+script-path=(\S+)/);
+if (!activityMatch) throw new Error('Malformed Weibo activity response rule');
+const activityEndpoint = new RegExp(activityMatch[1]);
+if (!activityEndpoint.test('https://api.weibo.cn/2/messageflow/notice')) throw new Error('Activity rule misses /2/messageflow/notice');
+if (!activityEndpoint.test('https://api.weibo.cn/2/messageflow/notice?since_id=123')) throw new Error('Activity rule misses query-string requests');
+for (const url of [
+  'https://api.weibo.cn/2/statuses/friends_timeline',
+  'https://api.weibo.com/2/messageflow/notice',
+  'https://api.weibo.cn/2/messageflow/notice/extra'
+]) {
+  if (activityEndpoint.test(url)) throw new Error('Activity rule is too broad: ' + url);
+}
+if (!activityRule.includes('enable={custom}')) throw new Error('Weibo activity rule is not controlled by the custom switch');
+if (!combinedPlugin.includes('api.weibo.cn')) throw new Error('Weibo activity API host is missing from MITM');
+if (/scripts\/weibo_activity_clean\.js[^\n]*friends/.test(combinedPlugin)) throw new Error('Stale friends_timeline cleaner rule remains');
+
+// Execute the cleaner against a fixture matching the previously captured
+// promoted-message fields; verify normal messages and unrelated fields survive.
+const activityCleaner = fs.readFileSync('scripts/weibo_activity_clean.js', 'utf8');
+const runActivityCleaner = body => {
+  let result;
+  const sandbox = {
+    $response: {body},
+    $done(value) { result = value; }
+  };
+  vm.runInNewContext(activityCleaner, sandbox, {timeout: 1000});
+  return result;
+};
+const activityFixture = {
+  ok: 1,
+  total_number: 4,
+  messages: [
+    {id: 'promoted', type: 47, sub_type: 65, isrecommend: true, title: '推广内容'},
+    {id: 'normal', type: 1, text: '普通动态'},
+    {id: 'not-recommended', type: 47, sub_type: 65, isrecommend: false},
+    {id: 'other-subtype', type: 47, sub_type: 64, isrecommend: true}
+  ]
+};
+const activityResult = runActivityCleaner(JSON.stringify(activityFixture));
+if (typeof activityResult?.body !== 'string') throw new Error('Cleaner did not return a filtered response body');
+const activityCleaned = JSON.parse(activityResult.body);
+if (activityCleaned.messages.length !== 3 || activityCleaned.messages.some(message => message.id === 'promoted')) {
+  throw new Error('Cleaner did not remove the confirmed promoted message');
+}
+if (activityCleaned.messages.map(message => message.id).join(',') !== 'normal,not-recommended,other-subtype') {
+  throw new Error('Cleaner removed or reordered a non-ad message');
+}
+if (activityCleaned.ok !== activityFixture.ok || activityCleaned.total_number !== activityFixture.total_number) {
+  throw new Error('Cleaner modified unrelated response fields');
+}
+const noAdResult = runActivityCleaner(JSON.stringify({messages: [{id:'normal', type:1}]}));
+if (!noAdResult || Object.keys(noAdResult).length !== 0) throw new Error('Cleaner should leave non-ad responses untouched');
+const malformedResult = runActivityCleaner('{invalid-json');
+if (!malformedResult || Object.keys(malformedResult).length !== 0) throw new Error('Cleaner must fail open on malformed JSON');
+console.log('PASS: Weibo messageflow endpoint binding and promoted-message JSON filter');
+
