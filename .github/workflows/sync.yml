@@ -36,7 +36,7 @@ jobs:
         run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
       - name: Check synchronizer and verifier syntax
         run: |
-          for file in tools/sync.mjs tools/verify.mjs tools/sync-extra.mjs tools/verify-extra.mjs tools/sync-meituan.mjs tools/verify-meituan.mjs tools/sync-applet.mjs tools/verify-applet.mjs; do
+          for file in tools/sync.mjs tools/verify.mjs tools/sync-extra.mjs tools/verify-extra.mjs tools/sync-meituan.mjs tools/verify-meituan.mjs; do
             node --check "$file"
           done
       - name: Fetch, verify and commit daily upstream mirrors
@@ -77,9 +77,6 @@ jobs:
           run_one "ZenmoFeiShi Meituan" tools/sync-meituan.mjs tools/verify-meituan.mjs \
             .last-meituan-sync.json MeiTuan.plugin scripts/MeiTuan.js \
             icons/MeiTuan.png reports/meituan-metadata.json
-          run_one "MoYu WeChat mini programs" tools/sync-applet.mjs tools/verify-applet.mjs \
-            .last-applet-sync.json WeChatApplet.plugin scripts/WeChatApplet.js \
-            scripts/ZhangShangGongJiao.js reports/applet-metadata.json
 
           if ! git diff --cached --quiet; then
             git commit -m 'chore: sync verified Loon plugins (04:00 Beijing)'
