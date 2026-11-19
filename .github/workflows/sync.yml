@@ -1,14 +1,15 @@
-name: Sync all Loon plugins daily at 04:00 Beijing
+name: Sync all Loon plugins every other day at 04:00 Beijing
 
 on:
   # GitHub Actions cron uses UTC: 20:00 UTC = 04:00 next day Asia/Shanghai.
+  # Day-of-month step schedule: 1,3,5...; note month boundaries can shift the gap.
   # All upstream-managed plugins run in one job to avoid competing git pushes.
   schedule:
-    - cron: '0 20 * * *'
+    - cron: '0 20 */2 * *'
   workflow_dispatch:
     inputs:
       force:
-        description: Force an upstream check outside the daily schedule
+        description: Force an upstream check outside the scheduled run
         required: false
         type: boolean
         default: true
@@ -39,7 +40,7 @@ jobs:
           for file in tools/sync.mjs tools/verify.mjs tools/sync-extra.mjs tools/verify-extra.mjs tools/sync-meituan.mjs tools/verify-meituan.mjs; do
             node --check "$file"
           done
-      - name: Fetch, verify and commit daily upstream mirrors
+      - name: Fetch, verify and commit upstream mirrors
         shell: bash
         env:
           # Scheduled checks always run, regardless of the prior success timestamp.
@@ -79,7 +80,7 @@ jobs:
             icons/MeiTuan.png reports/meituan-metadata.json
 
           if ! git diff --cached --quiet; then
-            git commit -m 'chore: sync verified Loon plugins (04:00 Beijing)'
+            git commit -m 'chore: sync verified Loon plugins (every other day, 04:00 Beijing)'
             git push
           else
             echo 'No verified source changes to publish.'
