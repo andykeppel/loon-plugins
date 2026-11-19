@@ -20,9 +20,9 @@ Loon plugins hosted by **andykeppel**. Upstream authors retain attribution. Thes
 
 ## Automatic source checks and manual update
 
-**Unified upstream refresh:** GitHub Actions checks **every day at 04:00 Asia/Shanghai (20:00 UTC the previous day)**, without a rolling 24-hour cooldown. The single job handles YangJiBao, WeiboEnhanced, WeiboAds, WeiboCombined, JiJianHuiLv and Meituan sequentially to avoid concurrent pushes. Each independent plugin is staged only after conversion and verification succeeds. GitHub Actions scheduled jobs can occasionally start later than their cron time. This is GitHub's source mirroring schedule, **not an automatic on-device Loon subscription refresh**. The independent Localdevvpn plugin is not upstream-managed.
+**Unified upstream refresh:** GitHub Actions checks **every other calendar day at 04:00 Asia/Shanghai (20:00 UTC the previous day)** using the day-of-month cron step (`1, 3, 5, ...`). This is not a strict rolling 48-hour interval: the gap around month boundaries can vary. Manual runs remain available. The single job handles YangJiBao, WeiboEnhanced, WeiboAds, WeiboCombined, JiJianHuiLv and Meituan sequentially to avoid concurrent pushes. Each independent plugin is staged only after conversion and verification succeeds. GitHub Actions scheduled jobs can occasionally start later than their cron time. This is GitHub's source mirroring schedule, **not an automatic on-device Loon subscription refresh**. The independent Localdevvpn plugin is not upstream-managed.
 
-- [统一每日 04:00 同步（支持手动运行）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync.yml)
+- [隔日 04:00 同步（支持手动运行）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync.yml)
 - [单独手动同步极简汇率](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-extra.yml)
 - [单独手动同步美团（ZenmoFeiShi）](https://github.com/andykeppel/loon-plugins/actions/workflows/sync-meituan.yml)
 
