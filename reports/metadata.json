@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-19T01:34:38.679Z",
+  "checkedAt": "2026-11-20T01:38:23.730Z",
   "converter": "Script-Hub-Org/Script-Hub",
   "parserCommit": "bc1b8b05138adead482d87b284c58a34d8470503",
   "plugins": {
@@ -21,8 +21,8 @@
     },
     "WeiboEnhanced.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
-      "sourceSha256": "d8617a27ce851fd637c87f5c8df92d3eafbb24f02b2a194cfb00475e2594175c",
-      "pluginSha256": "25e8bc24ec0cc0621c232568921054887b2f93bfd2c18e982ffcc17b19245d8c",
+      "sourceSha256": "139573c163e192efbbce8a537f944025f3418141b5bfc259e34bc154f36feced",
+      "pluginSha256": "4957ab65fbb05f4bd2bc3b23791c4d6f73ab3c1002dd33ee39393e4a951b80ab",
       "remoteScriptUrls": [
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js"
       ],
@@ -40,14 +40,14 @@
       "sourceIndicators": [],
       "note": "Static inspection only. Remote scripts can change independently; this is not a malware guarantee.",
       "originalScript": "https://ddgksf2013.top/scripts/weibo_json.js",
-      "originalScriptSha256": "5ed91dbb4e764c1feecd8159a039f21a95499d5bffc55986595ba5e55c8f8657",
+      "originalScriptSha256": "c58f679b813f11d0a65270e20064d3d226cd7d9fa0941f4130f54609647a2702",
       "mirroredScript": "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
       "localPatches": []
     },
     "WeiboCombined.plugin": {
       "source": "https://ddgksf2013.top/rewrite/WeiboEnhanced.conf",
-      "sourceSha256": "d8617a27ce851fd637c87f5c8df92d3eafbb24f02b2a194cfb00475e2594175c",
-      "pluginSha256": "ad44446632889a1546c73821a81a07c65174c6a1bd00c79edf0e7a4c0e344866",
+      "sourceSha256": "139573c163e192efbbce8a537f944025f3418141b5bfc259e34bc154f36feced",
+      "pluginSha256": "1788c30f1f8d57b3e1ec47a7d8cbc3610ab66b22c6db8f2d4e327dba5521432a",
       "remoteScriptUrls": [
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_json.js",
         "https://raw.githubusercontent.com/andykeppel/loon-plugins/main/scripts/weibo_activity_clean.js"
